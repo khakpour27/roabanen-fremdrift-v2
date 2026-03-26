@@ -170,8 +170,17 @@
 
   /* Connected spanning bars */
   .bar.span-start { border-top-right-radius: 0; border-bottom-right-radius: 0; }
-  .bar.span-mid   { border-radius: 0; opacity: 0.78; }
-  .bar.span-end   { border-top-left-radius: 0; border-bottom-left-radius: 0; opacity: 0.78; }
+  .bar.span-mid   { border-radius: 0; }
+  .bar.span-end   { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+  .span-underbar {
+    height: 5px;
+    border-radius: 0;
+    opacity: 0.22;
+    margin-top: 2px;
+  }
+  .span-underbar.span-ub-start { border-radius: 4px 0 0 4px; }
+  .span-underbar.span-ub-end   { border-radius: 0 4px 4px 0; }
+  .span-underbar.span-ub-solo  { border-radius: 4px; }
   td.span-bridge-r { border-right-color: transparent !important; }
   td.span-bridge-l { border-left-color: transparent !important; }
   .bars.flush-r { padding-right: 0; }
@@ -550,8 +559,12 @@ function render() {
           const txtCls = wt.lightBg ? ' light-bg' : '';
           const sp = spanPos(a[0], a[1], a[2], a[3]);
           const spanCls = sp ? ` span-${sp}` : '';
-          const label = a[3];
-          h += `<div class="bar${txtCls}${spanCls}" style="background:${wt.color}" title="${a[3]}" data-wt="${a[2]}">${label}</div>`;
+          h += `<div class="bar${txtCls}${spanCls}" style="background:${wt.color}" title="${a[3]}" data-wt="${a[2]}">${a[3]}</div>`;
+          // Dimmed underbar for connected spans
+          if (sp) {
+            const ubCls = sp === 'start' ? 'span-ub-start' : sp === 'end' ? 'span-ub-end' : '';
+            h += `<div class="span-underbar ${ubCls}" style="background:${wt.color}"></div>`;
+          }
         });
         h += '</div></td>';
       }
