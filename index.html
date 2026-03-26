@@ -166,6 +166,7 @@
   .bar.light-bg { color: #1C2B54; }
 
   .brudd-col { background: rgba(180, 40, 30, 0.04) !important; }
+  .mar-col { background: rgba(210, 234, 247, 0.35) !important; }
 
   /* Legend */
   .legend { display: flex; gap: 20px; margin-top: 18px; flex-wrap: wrap; align-items: center; max-width: 1380px; margin-left: auto; margin-right: auto; }
@@ -268,7 +269,7 @@
     <select id="f-period">
       <option value="all">Hele perioden</option>
       <option value="prep">Forberedende (apr–jun)</option>
-      <option value="brudd">Sommerbrudd (jul–aug)</option>
+      <option value="brudd">Stengt spor (jul–aug)</option>
     </select>
   </div>
   <button class="filter-reset" onclick="resetFilters()">Nullstill</button>
@@ -287,14 +288,15 @@
 
 <script>
 const SECTIONS = [
-  { name: 'Borgen - Smestad',        km: 'km 2,8 – 4,0' },
-  { name: 'Smestad - Sørbyhaugen',   km: 'km 4,0 – 4,5' },
-  { name: 'Smestad - Makrellbekken', km: 'km 4,0 – 4,9' },
-  { name: 'Makrellbekken - Holmen',  km: 'km 4,9 – 5,4' },
-  { name: 'Holmen - Hovseter',       km: 'km 5,4 – 6,1' },
-  { name: 'Hovseter - Røa',          km: 'km 6,0 – 6,8' },
-  { name: 'Røa - Ekraveien',         km: 'km 6,8 – 7,5' },
-  { name: 'Ekraveien - Eiksmarka',   km: 'km 7,5 – 8,4' },
+  { name: 'Borgen – Eiksmarka',      km: 'km 2,8 – 8,5' },
+  { name: 'Borgen – Smestad',        km: 'km 2,8 – 4,0' },
+  { name: 'Smestad – Sørbyhaugen',   km: 'km 4,0 – 4,5' },
+  { name: 'Smestad – Makrellbekken', km: 'km 4,0 – 4,9' },
+  { name: 'Makrellbekken – Holmen',  km: 'km 4,9 – 5,4' },
+  { name: 'Holmen – Hovseter',       km: 'km 5,4 – 6,1' },
+  { name: 'Hovseter – Røa',          km: 'km 6,0 – 6,8' },
+  { name: 'Røa – Ekraveien',         km: 'km 6,8 – 7,5' },
+  { name: 'Ekraveien – Eiksmarka',   km: 'km 7,5 – 8,4' },
 ];
 
 const WT = {
@@ -308,6 +310,7 @@ const WT = {
 };
 
 const COLS = [
+  { id: 'mar',  label: '',        brudd: false, period: 'prep', mar: true },
   { id: 'apr',  label: 'Apr',     brudd: false, period: 'prep' },
   { id: 'mai',  label: 'Mai',     brudd: false, period: 'prep' },
   { id: 'jun',  label: 'Jun',     brudd: false, period: 'prep' },
@@ -320,46 +323,56 @@ const COLS = [
 ];
 
 const DATA = [
-  [0, 'w1', 'sikring',   'Fundamenttiltak gjerdestolper'],
-  [0, 'w1', 'elektro',   'Jordledning nedgraving i ballast'],
-  [0, 'w2', 'elektro',   'Jordledning i kanal'],
-  [0, 'w3', 'elektro',   'Jordledning i kanal'],
-  [0, 'w4', 'elektro',   'Jordledning i kanal'],
-  [0, 'w5', 'elektro',   'Jordledning i kanal'],
-  [1, 'apr', 'konstruksjon', 'Straks tiltak skjæring/mur/drenering'],
-  [1, 'mai', 'konstruksjon', 'Permanente tiltak skjæring/mur'],
-  [1, 'jun', 'konstruksjon', 'Permanente tiltak skjæring/mur'],
-  [1, 'w1', 'spor',       'Demontering sporkonstruksjon'],
-  [1, 'w2', 'konstruksjon','Tiltak skjæring/mur/drenering'],
-  [1, 'w3', 'konstruksjon','Utbedring over-/underbygning'],
-  [1, 'w4', 'spor',       'Innlegging ballastmatter'],
-  [2, 'w1', 'konstruksjon', 'Masseutskifting Makrellbekken stasjon'],
-  [2, 'w3', 'spor',       'Utskiftning ballastpukk'],
-  [2, 'w4', 'spor',       'Ny ballastpukk / sporkonstruksjon'],
-  [2, 'w4', 'veksel',     'Sporveksler R0446/R0448'],
-  [2, 'w5', 'spor',       'Etablere sporkonstruksjon'],
-  [2, 'w5', 'elektro',    'Ny ALU-strømskinne'],
-  [3, 'w1', 'elektro',    'Kabelkanaler og kabeltiltak'],
-  [3, 'w2', 'elektro',    'Ny ALU-strømskinne'],
-  [3, 'w3', 'elektro',    'Ny ALU-strømskinne'],
-  [4, 'w2', 'elektro',    'Kabelkanaler og kabeltiltak'],
-  [5, 'apr', 'bru',       'Rehab bru Sørkedalsveien / Ostedalsveien'],
-  [5, 'apr', 'sikring',   'Kjøresikkert gjerde Røatunnelen'],
-  [5, 'w1', 'veksel',     'Masseutskiftning + utskifting sporveksler'],
-  [5, 'w1', 'tunnel',     'Tiltak tunnel Røa stasjon'],
-  [5, 'w2', 'veksel',     'Utskifting sporveksler R0620/R0633'],
-  [5, 'w2', 'elektro',    'Sporvekselvarmeanlegg + lys'],
-  [5, 'w3', 'elektro',    'Kabelkanaler og kabeltiltak'],
-  [6, 'apr', 'spor',      'Utkjøring skinner NSB40 til 49E1'],
-  [6, 'w1', 'spor',       'Utskiftning spor NSB40 til 49E1'],
-  [6, 'w1', 'sikring',    'Tiltak støyskjerm Grinidammen'],
-  [6, 'w2', 'tunnel',     'Rehabilitering tunnel Røa stasjon'],
-  [6, 'w3', 'tunnel',     'Rehabilitering tunnel Røa stasjon'],
-  [6, 'w4', 'tunnel',     'Rehabilitering tunnel Røa stasjon'],
-  [7, 'apr', 'bru',       'Rehab bru Grinidammen / Vollsveien'],
-  [7, 'w1', 'veksel',     'Masseutskiftning + utskifting sporveksler'],
-  [7, 'w2', 'veksel',     'Utskifting sporveksler R0806/R0817'],
-  [7, 'w2', 'elektro',    'Sporvekselvarmeanlegg + styreskap + lys'],
+  // 0 = Borgen – Eiksmarka (hele strekningen)
+  [0, 'w1', 'elektro',   'Jordledning i kanal og nedgraving i ballast'],
+  [0, 'w2', 'elektro',   'Jordledning i kanal og nedgraving i ballast'],
+  [0, 'w3', 'elektro',   'Jordledning i kanal og nedgraving i ballast'],
+  [0, 'w4', 'elektro',   'Jordledning i kanal og nedgraving i ballast'],
+  [0, 'w5', 'elektro',   'Jordledning i kanal og nedgraving i ballast'],
+  // 1 = Borgen – Smestad
+  [1, 'w1', 'sikring',   'Fundamenttiltak gjerdestolper'],
+  // 2 = Smestad – Sørbyhaugen
+  [2, 'mar', 'konstruksjon', 'Straks tiltak skjæring/mur/drenering'],
+  [2, 'apr', 'konstruksjon', 'Straks tiltak skjæring/mur/drenering'],
+  [2, 'mai', 'konstruksjon', 'Permanente tiltak skjæring/mur'],
+  [2, 'jun', 'konstruksjon', 'Permanente tiltak skjæring/mur'],
+  [2, 'w1', 'spor',       'Demontering sporkonstruksjon'],
+  [2, 'w2', 'konstruksjon','Tiltak skjæring/mur/drenering'],
+  [2, 'w3', 'konstruksjon','Utbedring over-/underbygning'],
+  [2, 'w4', 'spor',       'Innlegging ballastmatter'],
+  // 3 = Smestad – Makrellbekken
+  [3, 'w1', 'konstruksjon', 'Masseutskifting Makrellbekken stasjon'],
+  [3, 'w3', 'spor',       'Utskiftning ballastpukk'],
+  [3, 'w4', 'spor',       'Ny ballastpukk / sporkonstruksjon'],
+  [3, 'w4', 'veksel',     'Sporveksler R0446/R0448'],
+  [3, 'w5', 'spor',       'Etablere sporkonstruksjon'],
+  [3, 'w5', 'elektro',    'Ny ALU-strømskinne'],
+  // 4 = Makrellbekken – Holmen
+  [4, 'w1', 'elektro',    'Kabelkanaler og kabeltiltak'],
+  [4, 'w2', 'elektro',    'Ny ALU-strømskinne'],
+  [4, 'w3', 'elektro',    'Ny ALU-strømskinne'],
+  // 5 = Holmen – Hovseter
+  [5, 'w2', 'elektro',    'Kabelkanaler og kabeltiltak'],
+  // 6 = Hovseter – Røa
+  [6, 'apr', 'bru',       'Rehab bru Sørkedalsveien og Ostedalsveien'],
+  [6, 'apr', 'sikring',   'Kjøresikkert gjerde Røatunnelen'],
+  [6, 'w1', 'veksel',     'Masseutskiftning + utskifting sporveksler'],
+  [6, 'w1', 'tunnel',     'Tiltak tunnel Røa stasjon'],
+  [6, 'w2', 'veksel',     'Utskifting sporveksler R0620/R0633'],
+  [6, 'w2', 'elektro',    'Sporvekselvarmeanlegg + lys'],
+  [6, 'w3', 'elektro',    'Kabelkanaler og kabeltiltak'],
+  // 7 = Røa – Ekraveien
+  [7, 'apr', 'spor',      'Utkjøring skinner NSB40 til 49E1'],
+  [7, 'w1', 'spor',       'Utskiftning spor NSB40 til 49E1'],
+  [7, 'w1', 'sikring',    'Tiltak støyskjerm Grinidammen'],
+  [7, 'w2', 'tunnel',     'Rehabilitering tunnel Røa stasjon'],
+  [7, 'w3', 'tunnel',     'Rehabilitering tunnel Røa stasjon'],
+  [7, 'w4', 'tunnel',     'Rehabilitering tunnel Røa stasjon'],
+  // 8 = Ekraveien – Eiksmarka
+  [8, 'apr', 'bru',       'Rehab bru Grinidammen og Vollsveien'],
+  [8, 'w1', 'veksel',     'Masseutskiftning + utskifting sporveksler'],
+  [8, 'w2', 'veksel',     'Utskifting sporveksler R0806/R0817'],
+  [8, 'w2', 'elektro',    'Sporvekselvarmeanlegg + styreskap + lys'],
 ];
 
 // Populate filter dropdowns
@@ -467,8 +480,8 @@ function render() {
   h += '<thead>';
   h += '<tr>';
   h += '<th class="label-header" rowspan="2">Strekning</th>';
-  h += '<th class="phase-header prep-phase-header" colspan="3">Forberedende</th>';
-  h += '<th class="phase-header brudd-phase brudd-phase-header" colspan="6"><span class="brudd-tag">BRUDD</span> &nbsp;Sommerbrudd 3. jul – 13. aug 2028</th>';
+  h += '<th class="phase-header prep-phase-header" colspan="4">Forberedende</th>';
+  h += '<th class="phase-header brudd-phase brudd-phase-header" colspan="6"><span class="brudd-tag">STENGT SPOR</span> &nbsp;Stengt spor 3. jul – 13. aug 2028</th>';
   h += '</tr>';
 
   // Thead: time columns row
@@ -489,12 +502,13 @@ function render() {
     COLS.forEach(col => {
       const acts = DATA.filter(d => d[0] === si && d[1] === col.id);
       const bruddCls = col.brudd ? ' brudd-col' : '';
+      const marCls = col.mar ? ' mar-col' : '';
       const pCls = col.brudd ? 'brudd-phase-header' : 'prep-phase-header';
 
       if (acts.length === 0) {
-        h += `<td class="${bruddCls} ${pCls}" data-period="${col.period}"></td>`;
+        h += `<td class="${bruddCls}${marCls} ${pCls}" data-period="${col.period}"></td>`;
       } else {
-        h += `<td class="${bruddCls} ${pCls}" data-period="${col.period}"><div class="bars">`;
+        h += `<td class="${bruddCls}${marCls} ${pCls}" data-period="${col.period}"><div class="bars">`;
         acts.forEach(a => {
           const wt = WT[a[2]];
           const txtCls = wt.lightBg ? ' light-bg' : '';
@@ -516,14 +530,14 @@ function render() {
     lg += `<div class="legend-item"><div class="legend-swatch" style="background:${v.color}"></div>${v.label}</div>`;
   }
   lg += '<div class="legend-divider"></div>';
-  lg += `<div class="legend-item"><span class="brudd-tag">BRUDD</span> Full stans i trafikk</div>`;
+  lg += `<div class="legend-item"><span class="brudd-tag">STENGT SPOR</span> Stengt spor</div>`;
   legend.innerHTML = lg;
 
   // Note
   document.getElementById('note').innerHTML =
     'Befaringer gjennomføres april 2026 for alle strekninger. ' +
-    'Forberedende arbeid (apr–jun 2028) utføres uten full stans. ' +
-    'Sommerbrudd med full trafikkstans: 3. juli – 13. august 2028.';
+    'Forberedende arbeid (apr–jun 2028) utføres nattarbeid eller spor i drift. ' +
+    'Stengt spor: 3. juli – 13. august 2028.';
 }
 
 render();
