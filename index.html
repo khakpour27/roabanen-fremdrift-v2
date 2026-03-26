@@ -170,8 +170,8 @@
 
   /* Connected spanning bars */
   .bar.span-start { border-top-right-radius: 0; border-bottom-right-radius: 0; }
-  .bar.span-mid   { border-radius: 0; }
-  .bar.span-end   { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+  .bar.span-mid   { border-radius: 0; opacity: 0.78; }
+  .bar.span-end   { border-top-left-radius: 0; border-bottom-left-radius: 0; opacity: 0.78; }
   td.span-bridge-r { border-right-color: transparent !important; }
   td.span-bridge-l { border-left-color: transparent !important; }
   .bars.flush-r { padding-right: 0; }
@@ -550,8 +550,7 @@ function render() {
           const txtCls = wt.lightBg ? ' light-bg' : '';
           const sp = spanPos(a[0], a[1], a[2], a[3]);
           const spanCls = sp ? ` span-${sp}` : '';
-          // Show label only on first cell of a span (start) or standalone bars
-          const label = (sp === 'mid' || sp === 'end') ? '' : a[3];
+          const label = a[3];
           h += `<div class="bar${txtCls}${spanCls}" style="background:${wt.color}" title="${a[3]}" data-wt="${a[2]}">${label}</div>`;
         });
         h += '</div></td>';
