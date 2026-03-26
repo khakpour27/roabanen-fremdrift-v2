@@ -168,6 +168,15 @@
   .brudd-col { background: rgba(180, 40, 30, 0.04) !important; }
   .mar-col { background: rgba(210, 234, 247, 0.35) !important; }
 
+  /* Connected spanning bars */
+  .bar.span-start { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+  .bar.span-mid   { border-radius: 0; }
+  .bar.span-end   { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+  td.span-bridge-r { border-right-color: transparent !important; }
+  td.span-bridge-l { border-left-color: transparent !important; }
+  .bars.flush-r { padding-right: 0; }
+  .bars.flush-l { padding-left: 0; }
+
   /* Legend */
   .legend { display: flex; gap: 20px; margin-top: 18px; flex-wrap: wrap; align-items: center; max-width: 1380px; margin-left: auto; margin-right: auto; }
   .legend-item { display: flex; align-items: center; gap: 8px; font-size: 16px; color: #2C4A63; }
@@ -288,7 +297,6 @@
 
 <script>
 const SECTIONS = [
-  { name: 'Borgen – Eiksmarka',      km: 'km 2,8 – 8,5' },
   { name: 'Borgen – Smestad',        km: 'km 2,8 – 4,0' },
   { name: 'Smestad – Sørbyhaugen',   km: 'km 4,0 – 4,5' },
   { name: 'Smestad – Makrellbekken', km: 'km 4,0 – 4,9' },
@@ -297,7 +305,11 @@ const SECTIONS = [
   { name: 'Hovseter – Røa',          km: 'km 6,0 – 6,8' },
   { name: 'Røa – Ekraveien',         km: 'km 6,8 – 7,5' },
   { name: 'Ekraveien – Eiksmarka',   km: 'km 7,5 – 8,4' },
+  { name: 'Borgen – Eiksmarka',      km: 'km 2,8 – 8,5' },
 ];
+
+// Render order: hele strekning (8) first, then 0-7
+const RENDER_ORDER = [8, 0, 1, 2, 3, 4, 5, 6, 7];
 
 const WT = {
   spor:         { label: 'Sporarbeid',              color: '#1C2B54', lightBg: false },
@@ -321,59 +333,71 @@ const COLS = [
   { id: 'w5',   label: '31. jul–6. aug',  brudd: true, period: 'brudd' },
   { id: 'w6',   label: '7.–13. aug',      brudd: true, period: 'brudd' },
 ];
+const COL_IDS = COLS.map(c => c.id);
 
 const DATA = [
-  // 0 = Borgen – Eiksmarka (hele strekningen)
-  [0, 'w1', 'elektro',   'Jordledning i kanal og nedgraving i ballast'],
-  [0, 'w2', 'elektro',   'Jordledning i kanal og nedgraving i ballast'],
-  [0, 'w3', 'elektro',   'Jordledning i kanal og nedgraving i ballast'],
-  [0, 'w4', 'elektro',   'Jordledning i kanal og nedgraving i ballast'],
-  [0, 'w5', 'elektro',   'Jordledning i kanal og nedgraving i ballast'],
-  // 1 = Borgen – Smestad
-  [1, 'w1', 'sikring',   'Fundamenttiltak gjerdestolper'],
-  // 2 = Smestad – Sørbyhaugen
-  [2, 'mar', 'konstruksjon', 'Straks tiltak skjæring/mur/drenering'],
-  [2, 'apr', 'konstruksjon', 'Straks tiltak skjæring/mur/drenering'],
-  [2, 'mai', 'konstruksjon', 'Permanente tiltak skjæring/mur'],
-  [2, 'jun', 'konstruksjon', 'Permanente tiltak skjæring/mur'],
-  [2, 'w1', 'spor',       'Demontering sporkonstruksjon'],
-  [2, 'w2', 'konstruksjon','Tiltak skjæring/mur/drenering'],
-  [2, 'w3', 'konstruksjon','Utbedring over-/underbygning'],
-  [2, 'w4', 'spor',       'Innlegging ballastmatter'],
-  // 3 = Smestad – Makrellbekken
-  [3, 'w1', 'konstruksjon', 'Masseutskifting Makrellbekken stasjon'],
-  [3, 'w3', 'spor',       'Utskiftning ballastpukk'],
-  [3, 'w4', 'spor',       'Ny ballastpukk / sporkonstruksjon'],
-  [3, 'w4', 'veksel',     'Sporveksler R0446/R0448'],
-  [3, 'w5', 'spor',       'Etablere sporkonstruksjon'],
-  [3, 'w5', 'elektro',    'Ny ALU-strømskinne'],
-  // 4 = Makrellbekken – Holmen
-  [4, 'w1', 'elektro',    'Kabelkanaler og kabeltiltak'],
-  [4, 'w2', 'elektro',    'Ny ALU-strømskinne'],
-  [4, 'w3', 'elektro',    'Ny ALU-strømskinne'],
-  // 5 = Holmen – Hovseter
-  [5, 'w2', 'elektro',    'Kabelkanaler og kabeltiltak'],
-  // 6 = Hovseter – Røa
-  [6, 'apr', 'bru',       'Rehab bru Sørkedalsveien og Ostedalsveien'],
-  [6, 'apr', 'sikring',   'Kjøresikkert gjerde Røatunnelen'],
-  [6, 'w1', 'veksel',     'Masseutskiftning + utskifting sporveksler'],
-  [6, 'w1', 'tunnel',     'Tiltak tunnel Røa stasjon'],
-  [6, 'w2', 'veksel',     'Utskifting sporveksler R0620/R0633'],
-  [6, 'w2', 'elektro',    'Sporvekselvarmeanlegg + lys'],
-  [6, 'w3', 'elektro',    'Kabelkanaler og kabeltiltak'],
-  // 7 = Røa – Ekraveien
-  [7, 'apr', 'spor',      'Utkjøring skinner NSB40 til 49E1'],
-  [7, 'w1', 'spor',       'Utskiftning spor NSB40 til 49E1'],
-  [7, 'w1', 'sikring',    'Tiltak støyskjerm Grinidammen'],
-  [7, 'w2', 'tunnel',     'Rehabilitering tunnel Røa stasjon'],
-  [7, 'w3', 'tunnel',     'Rehabilitering tunnel Røa stasjon'],
-  [7, 'w4', 'tunnel',     'Rehabilitering tunnel Røa stasjon'],
-  // 8 = Ekraveien – Eiksmarka
-  [8, 'apr', 'bru',       'Rehab bru Grinidammen og Vollsveien'],
-  [8, 'w1', 'veksel',     'Masseutskiftning + utskifting sporveksler'],
-  [8, 'w2', 'veksel',     'Utskifting sporveksler R0806/R0817'],
-  [8, 'w2', 'elektro',    'Sporvekselvarmeanlegg + styreskap + lys'],
+  // 0 = Borgen – Smestad
+  [0, 'w1', 'sikring',   'Fundamenttiltak gjerdestolper'],
+  // 1 = Smestad – Sørbyhaugen
+  [1, 'mar', 'konstruksjon', 'Straks tiltak skjæring/mur/drenering'],
+  [1, 'apr', 'konstruksjon', 'Straks tiltak skjæring/mur/drenering'],
+  [1, 'mai', 'konstruksjon', 'Permanente tiltak skjæring/mur'],
+  [1, 'jun', 'konstruksjon', 'Permanente tiltak skjæring/mur'],
+  [1, 'w1', 'spor',       'Demontering sporkonstruksjon'],
+  [1, 'w2', 'konstruksjon','Tiltak skjæring/mur/drenering'],
+  [1, 'w3', 'konstruksjon','Utbedring over-/underbygning'],
+  [1, 'w4', 'spor',       'Innlegging ballastmatter'],
+  // 2 = Smestad – Makrellbekken
+  [2, 'w1', 'konstruksjon', 'Masseutskifting Makrellbekken stasjon'],
+  [2, 'w3', 'spor',       'Utskiftning ballastpukk'],
+  [2, 'w4', 'spor',       'Ny ballastpukk / sporkonstruksjon'],
+  [2, 'w4', 'veksel',     'Sporveksler R0446/R0448'],
+  [2, 'w5', 'spor',       'Etablere sporkonstruksjon'],
+  [2, 'w5', 'elektro',    'Ny ALU-strømskinne'],
+  // 3 = Makrellbekken – Holmen
+  [3, 'w1', 'elektro',    'Kabelkanaler og kabeltiltak'],
+  [3, 'w2', 'elektro',    'Ny ALU-strømskinne'],
+  [3, 'w3', 'elektro',    'Ny ALU-strømskinne'],
+  // 4 = Holmen – Hovseter
+  [4, 'w2', 'elektro',    'Kabelkanaler og kabeltiltak'],
+  // 5 = Hovseter – Røa
+  [5, 'apr', 'bru',       'Rehab bru Sørkedalsveien og Ostedalsveien'],
+  [5, 'apr', 'sikring',   'Kjøresikkert gjerde Røatunnelen'],
+  [5, 'w1', 'veksel',     'Masseutskiftning + utskifting sporveksler'],
+  [5, 'w1', 'tunnel',     'Tiltak tunnel Røa stasjon'],
+  [5, 'w2', 'veksel',     'Utskifting sporveksler R0620/R0633'],
+  [5, 'w2', 'elektro',    'Sporvekselvarmeanlegg + lys'],
+  [5, 'w3', 'elektro',    'Kabelkanaler og kabeltiltak'],
+  // 6 = Røa – Ekraveien
+  [6, 'apr', 'spor',      'Utkjøring skinner NSB40 til 49E1'],
+  [6, 'w1', 'spor',       'Utskiftning spor NSB40 til 49E1'],
+  [6, 'w1', 'sikring',    'Tiltak støyskjerm Grinidammen'],
+  [6, 'w2', 'tunnel',     'Rehabilitering tunnel Røa stasjon'],
+  [6, 'w3', 'tunnel',     'Rehabilitering tunnel Røa stasjon'],
+  [6, 'w4', 'tunnel',     'Rehabilitering tunnel Røa stasjon'],
+  // 7 = Ekraveien – Eiksmarka
+  [7, 'apr', 'bru',       'Rehab bru Grinidammen og Vollsveien'],
+  [7, 'w1', 'veksel',     'Masseutskiftning + utskifting sporveksler'],
+  [7, 'w2', 'veksel',     'Utskifting sporveksler R0806/R0817'],
+  [7, 'w2', 'elektro',    'Sporvekselvarmeanlegg + styreskap + lys'],
+  // 8 = Borgen – Eiksmarka (hele strekningen)
+  [8, 'w1', 'elektro',   'Jordledning i kanal og nedgraving i ballast'],
+  [8, 'w2', 'elektro',   'Jordledning i kanal og nedgraving i ballast'],
+  [8, 'w3', 'elektro',   'Jordledning i kanal og nedgraving i ballast'],
+  [8, 'w4', 'elektro',   'Jordledning i kanal og nedgraving i ballast'],
+  [8, 'w5', 'elektro',   'Jordledning i kanal og nedgraving i ballast'],
 ];
+
+// Detect whether a bar connects to its neighbours
+function spanPos(si, colId, wt, label) {
+  const ci = COL_IDS.indexOf(colId);
+  const prev = ci > 0 && DATA.some(d => d[0]===si && d[1]===COL_IDS[ci-1] && d[2]===wt && d[3]===label);
+  const next = ci < COL_IDS.length-1 && DATA.some(d => d[0]===si && d[1]===COL_IDS[ci+1] && d[2]===wt && d[3]===label);
+  if (prev && next) return 'mid';
+  if (next) return 'start';
+  if (prev) return 'end';
+  return '';
+}
 
 // Populate filter dropdowns
 function initFilters() {
@@ -427,10 +451,11 @@ function applyFilters() {
   const wtVal = document.getElementById('f-worktype').value;
   const perVal = document.getElementById('f-period').value;
 
-  // Show/hide rows
+  // Show/hide rows by data-section attribute
   const rows = document.querySelectorAll('tbody tr');
-  rows.forEach((row, i) => {
-    if (secVal === 'all' || parseInt(secVal) === i) {
+  rows.forEach(row => {
+    const si = parseInt(row.dataset.section);
+    if (secVal === 'all' || parseInt(secVal) === si) {
       row.classList.remove('hidden');
     } else {
       row.classList.add('hidden');
@@ -493,26 +518,41 @@ function render() {
   });
   h += '</tr></thead>';
 
-  // Tbody
+  // Tbody — rendered in RENDER_ORDER so hele strekning is first row
   h += '<tbody>';
-  SECTIONS.forEach((sec, si) => {
+  RENDER_ORDER.forEach(si => {
+    const sec = SECTIONS[si];
     h += `<tr data-section="${si}">`;
     h += `<td class="label-cell">${sec.name}<span class="km">${sec.km}</span></td>`;
 
-    COLS.forEach(col => {
+    COLS.forEach((col, ci) => {
       const acts = DATA.filter(d => d[0] === si && d[1] === col.id);
       const bruddCls = col.brudd ? ' brudd-col' : '';
       const marCls = col.mar ? ' mar-col' : '';
       const pCls = col.brudd ? 'brudd-phase-header' : 'prep-phase-header';
 
+      // Detect if cell needs span bridge classes
+      let cellBridgeR = false, cellBridgeL = false, flushR = false, flushL = false;
+      acts.forEach(a => {
+        const sp = spanPos(a[0], a[1], a[2], a[3]);
+        if (sp === 'start' || sp === 'mid') { cellBridgeR = true; flushR = true; }
+        if (sp === 'end' || sp === 'mid') { cellBridgeL = true; flushL = true; }
+      });
+      const tdExtra = (cellBridgeR ? ' span-bridge-r' : '') + (cellBridgeL ? ' span-bridge-l' : '');
+      const barsExtra = (flushR ? ' flush-r' : '') + (flushL ? ' flush-l' : '');
+
       if (acts.length === 0) {
         h += `<td class="${bruddCls}${marCls} ${pCls}" data-period="${col.period}"></td>`;
       } else {
-        h += `<td class="${bruddCls}${marCls} ${pCls}" data-period="${col.period}"><div class="bars">`;
+        h += `<td class="${bruddCls}${marCls} ${pCls}${tdExtra}" data-period="${col.period}"><div class="bars${barsExtra}">`;
         acts.forEach(a => {
           const wt = WT[a[2]];
           const txtCls = wt.lightBg ? ' light-bg' : '';
-          h += `<div class="bar${txtCls}" style="background:${wt.color}" title="${a[3]}" data-wt="${a[2]}">${a[3]}</div>`;
+          const sp = spanPos(a[0], a[1], a[2], a[3]);
+          const spanCls = sp ? ` span-${sp}` : '';
+          // Show label only on first cell of a span (start) or standalone bars
+          const label = (sp === 'mid' || sp === 'end') ? '' : a[3];
+          h += `<div class="bar${txtCls}${spanCls}" style="background:${wt.color}" title="${a[3]}" data-wt="${a[2]}">${label}</div>`;
         });
         h += '</div></td>';
       }
