@@ -319,6 +319,19 @@ function initFilters() {
   document.getElementById('f-section').addEventListener('change', applyFilters);
   document.getElementById('f-worktype').addEventListener('change', applyFilters);
   document.getElementById('f-period').addEventListener('change', applyFilters);
+
+  // Apply URL parameters
+  const params = new URLSearchParams(window.location.search);
+  if (params.has('section')) {
+    document.getElementById('f-section').value = params.get('section');
+  }
+  if (params.has('type')) {
+    document.getElementById('f-worktype').value = params.get('type');
+  }
+  if (params.has('period')) {
+    document.getElementById('f-period').value = params.get('period');
+  }
+  applyFilters();
 }
 
 function resetFilters() {
