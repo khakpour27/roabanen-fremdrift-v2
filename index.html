@@ -176,7 +176,7 @@
     height: 5px;
     border-radius: 0;
     opacity: 1;
-    margin-top: 2px;
+    margin-bottom: 0;
   }
   .span-underbar.span-ub-start { border-radius: 4px 0 0 4px; }
   .span-underbar.span-ub-end   { border-radius: 0 4px 4px 0; }
@@ -559,12 +559,12 @@ function render() {
           const txtCls = wt.lightBg ? ' light-bg' : '';
           const sp = spanPos(a[0], a[1], a[2], a[3]);
           const spanCls = sp ? ` span-${sp}` : '';
-          h += `<div class="bar${txtCls}${spanCls}" style="background:${wt.color}" title="${a[3]}" data-wt="${a[2]}">${a[3]}</div>`;
-          // Dimmed underbar for connected spans
+          // Connection bar on top for spanning bars
           if (sp) {
             const ubCls = sp === 'start' ? 'span-ub-start' : sp === 'end' ? 'span-ub-end' : '';
             h += `<div class="span-underbar ${ubCls}" style="background:${wt.color}"></div>`;
           }
+          h += `<div class="bar${txtCls}${spanCls}" style="background:${wt.color}" title="${a[3]}" data-wt="${a[2]}">${a[3]}</div>`;
         });
         h += '</div></td>';
       }
