@@ -43,7 +43,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .pgt .sub{font-size:18px;color:var(--text-m);margin-top:8px;}
 
 /* Model toggle tabs */
-.model-tabs{display:flex;gap:0;margin-bottom:20px;animation:fadeUp .5s .05s ease both;}
+.model-tabs{display:flex;gap:0;margin-bottom:0;animation:fadeUp .5s .05s ease both;}
 .mtab{
   padding:14px 28px;font-size:17px;font-weight:600;cursor:pointer;
   border:1px solid var(--border-s);color:var(--text-m);
@@ -305,7 +305,7 @@ const TRINN_PROSJEKT={
     desc:'Detaljering av valgt alternativ for alle fag. MMI-veileder 2.0 for MMI-niv\u00e5definisjoner, fastsatt i BIM-implementeringsplan (BIP). Komplett konkurransegrunnlag: modeller, tegninger, fagrapporter, tekniske beskrivelser, kravspesifikasjoner, risikoanalyser, kostnadskalkyler og leveranseplaner. Oppdatert kostnadsestimat og usikkerhetsanalyse.'},
   3:{label:'Kontrahering og samhandling',short:'T3 Kontrahering',color:'#612141',period:'',mmi:'\u2014',
     desc:'Bist\u00e5 Sporveien med sp\u00f8rsm\u00e5l fra tilbydere og kontrahering av entrepren\u00f8r. Sikre at planlagte l\u00f8sninger er praktisk gjennomf\u00f8rbare og tilpasset fremdriftsplan for byggefasen. Utarbeidelse av arbeidsunderlag til entrepren\u00f8r med tegninger og modeller klart for bygging.'},
-  4:{label:'Oppf\u00f8lging i byggefasen',short:'T4 Byggefase',color:'#B85042',period:'mar\u2013w6',mmi:'\u2014',
+  4:{label:'Oppf\u00f8lging i byggefasen',short:'T4 Byggefase',color:'#B85042',period:'',mmi:'\u2014',
     desc:'Strukturert samspillsfase basert p\u00e5 VDC-metodikk. Leveranse av arbeidstegninger og oppdatert modellgrunnlag iht. entrepren\u00f8rens fremdriftsplan. L\u00f8pende tekniske avklaringer, bygge- og spesialm\u00f8ter, befaringer. Oppf\u00f8lging mot Sporveiens tekniske regelverk.'},
   5:{label:'FDV-dokumentasjon',short:'T5 FDV',color:'#31B18F',period:'',mmi:'MMI 500',
     desc:'Koordinere og sammenstille FDV-dokumentasjon fra entrepren\u00f8r. Oppdatere \u00absom bygget\u00bb-tegninger, kabellister m.m. basert p\u00e5 oversendt underlag. Tydelige krav til hva som utarbeides og leveres av entrepren\u00f8ren.'},
@@ -404,7 +404,7 @@ function Chevrons({trinnMap,model,data,filterTrinn,setFilterTrinn}){
             <div className="chev-name">{v.label}</div>
             {v.mmi&&v.mmi!=='\u2014'&&<div className="chev-mmi">{v.mmi}</div>}
             {model==='bygg'&&<div className="chev-count">{count}</div>}
-            <div className="chev-period">{v.period||'\u2014'}</div>
+            {model==='bygg'&&v.period&&<div className="chev-period">{v.period}</div>}
             {model==='bygg'&&count===0&&<div className="chev-empty">(ingen aktiviteter)</div>}
           </div>
         );
@@ -753,18 +753,18 @@ function App(){
     <div className="app">
       <Header/>
       <div className="main">
-        <div className="pgt">
-          <h1>{'R\u00f8abanen'} <span>Trinnmodell</span></h1>
-          <div className="sub">{'Byggefasens trinn \u2014 Oppgradering av R\u00f8abanen \u00b7 2028'}</div>
-        </div>
-
-        {/* Model toggle */}
-        <div className="model-tabs">
-          <div className={`mtab${model==='bygg'?' active':''}`} onClick={()=>setModel('bygg')}>
-            Byggetrinn (5 faser)
+        <div className="pgt" style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'12px'}}>
+          <div>
+            <h1>{'R\u00f8abanen'} <span>Trinnmodell</span></h1>
+            <div className="sub">{'Byggefasens trinn \u2014 Oppgradering av R\u00f8abanen \u00b7 2028'}</div>
           </div>
-          <div className={`mtab${model==='prosjekt'?' active':''}`} onClick={()=>setModel('prosjekt')}>
-            Prosjektfaser (6 faser)
+          <div className="model-tabs" style={{marginBottom:0}}>
+            <div className={`mtab${model==='bygg'?' active':''}`} onClick={()=>setModel('bygg')}>
+              Byggetrinn (5 faser)
+            </div>
+            <div className={`mtab${model==='prosjekt'?' active':''}`} onClick={()=>setModel('prosjekt')}>
+              Prosjektfaser (6 faser)
+            </div>
           </div>
         </div>
 
