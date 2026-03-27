@@ -2,7 +2,9 @@
 
 Gantt-chart visualization for **Rådgiveroppdrag prosjektering — Oppgradering av Røabanen** (Oslo tram line upgrade).
 
-**Live:** <https://khakpour27.github.io/roabanen-fremdrift/>
+**Live (Gantt):** <https://khakpour27.github.io/roabanen-fremdrift-v2/>
+
+**Live (Trinnmodell):** <https://khakpour27.github.io/roabanen-fremdrift-v2/trinnmodell.html>
 
 ## Overview
 
@@ -62,7 +64,9 @@ A standalone HTML page showing the 2028 construction schedule across 9 track sec
 
 ## Tech stack
 
-Single `index.html` file — no build step, no external dependencies. Pure HTML + CSS + vanilla JavaScript. Hosted on GitHub Pages.
+**Gantt view** (`index.html`) — single file, no build step, pure HTML + CSS + vanilla JavaScript. Includes toggleable trinn overlay with colour-coded left borders.
+
+**Trinnmodell** (`trinnmodell.html`) — React 18 (CDN) + Babel standalone. Construction phase model (trinnmodell) for Røabanen, inspired by Holmenkollbanen's project lifecycle model. Features two model views: Byggetrinn (5 construction execution phases) and Prosjektfaser (6 project lifecycle phases). Includes clickable chevron phase progression, grouped card view, trinn-colored Gantt view, MMI maturity badges, and timeline distribution.
 
 ## Local preview
 

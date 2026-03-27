@@ -258,6 +258,68 @@
     .footer { display: none; }
     body { background: #fff; }
   }
+
+  /* ── Trinnmodell overlay ── */
+  .trinn-toggle {
+    font-family: inherit;
+    font-size: 13px;
+    padding: 6px 14px;
+    border: 2px solid #2E86AB;
+    border-radius: 4px;
+    background: #E8F4F9;
+    color: #2E86AB;
+    cursor: pointer;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .trinn-toggle:hover { background: #D0EBF5; }
+  body.trinn-active .trinn-toggle {
+    background: #2E86AB;
+    color: #fff;
+  }
+  .trinn-model-group { display: none; }
+  body.trinn-active .trinn-model-group { display: flex; }
+  .trinn-filter-group { display: none; }
+  body.trinn-active .trinn-filter-group { display: flex; }
+
+  /* Trinn left border on bars */
+  body.trinn-active .bar[data-trinn] {
+    border-left: 4px solid var(--trinn-color, transparent);
+  }
+  body.trinn-active .bar.span-mid[data-trinn],
+  body.trinn-active .bar.span-end[data-trinn] {
+    border-left: 4px solid var(--trinn-color, transparent);
+  }
+
+  /* Trinn legend */
+  .trinn-legend { display: none; margin-top: 10px; }
+  body.trinn-active .trinn-legend { display: flex; }
+  .trinn-legend-swatch {
+    width: 6px;
+    height: 14px;
+    border-radius: 1px;
+    flex-shrink: 0;
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+
+  /* Nav links */
+  .nav-links {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .nav-link {
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    padding: 4px 10px;
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+  .nav-link:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.5); }
 </style>
 </head>
 <body>
@@ -266,7 +328,10 @@
   <a class="cowi-logo" href="https://www.cowi.com" target="_blank" rel="noopener">
     <svg viewBox="0 0 453.54 255.12" xmlns="http://www.w3.org/2000/svg"><path fill="#F04E23" d="M245.43,96.14c-.76-2.38.54-3.79,2.92-3.79h6.06V88.13H215.14v4.22l9,.05a5.31,5.31,0,0,1,5.25,3.74L253.06,169H262l16.17-50.51L293.73,169H304l21.74-71.13c1-3.56,3.46-5.46,7-5.46,2.39,0,3.68,1.79,3.68,4.22v63.93c0,2.38-1.24,4.22-3.68,4.22H319.53V169h49.6v-4.22h-13.2c-2.38,0-3.68-1.84-3.68-4.22V96.62c0-2.43,1.3-4.27,3.68-4.27h13.2V88.13H305.74v4.22l7.35.05c5.3,0,7.31,2.81,5.79,8.12l-15,49.11L287.29,96.14c-.75-2.38.54-3.79,2.87-3.79h9.52V88.13H260.41v4.22l5.57.05a5.3,5.3,0,0,1,5.25,3.74L275.18,109l-12.66,39.53-17.09-52.4Zm-76.15,32.45c0,21,7.73,36.83,21.2,36.83s21.15-15.79,21.15-36.83S203.89,91.7,190.48,91.7s-21.2,15.79-21.2,36.89ZM122.66,87.21a24.48,24.48,0,0,1,13.52,3.84c5.24,3.08,8.54,1.89,8.54-2.92V85.26H149v35.05h-3.84C143,101.76,135.47,91.7,122.66,91.7c-14.88,0-21.21,15.79-21.21,36.89s6.33,36.72,21.21,36.72c18.38,0,27.09-13.41,30.28-36.72l1.14-8.33c2.81-19.36,15.79-33.05,36.4-33.05C213.85,87.21,228,105,228,128.59s-14.16,41.26-37.53,41.26c-18.34,0-30.67-10.76-35.15-26.77l-.11-.7-.22,1.13c-4.54,13.8-12.5,26.34-32.34,26.34-23.42,0-37-17.63-37-41.26s12.6-41.38,37-41.38Z"/></svg>
   </a>
-  <div class="cowi-tagline">Together, we shape a sustainable and liveable world</div>
+  <div class="nav-links">
+    <span class="cowi-tagline">Together, we shape a sustainable and liveable world</span>
+    <a class="nav-link" href="trinnmodell.html">Trinnmodell</a>
+  </div>
 </div>
 
 <div class="page-content">
@@ -293,12 +358,26 @@
     </select>
   </div>
   <button class="filter-reset" onclick="resetFilters()">Nullstill</button>
+  <span style="width:1px;height:24px;background:#C0C8D4;flex-shrink:0"></span>
+  <button class="trinn-toggle" onclick="toggleTrinn()">Vis trinnmodell</button>
+  <div class="filter-group trinn-model-group">
+    <label for="f-trinn-model">Modell:</label>
+    <select id="f-trinn-model">
+      <option value="bygg">Byggetrinn (5 faser)</option>
+      <option value="prosjekt">Prosjektfaser (6 faser)</option>
+    </select>
+  </div>
+  <div class="filter-group trinn-filter-group">
+    <label for="f-trinn">Trinn:</label>
+    <select id="f-trinn"><option value="all">Alle trinn</option></select>
+  </div>
 </div>
 
 <div class="table-wrap">
   <div id="chart"></div>
 </div>
 <div class="legend" id="legend"></div>
+<div class="legend trinn-legend" id="trinn-legend"></div>
 <div class="note" id="note"></div>
 </div><!-- end page-content -->
 
@@ -346,57 +425,77 @@ const COLS = [
 ];
 const COL_IDS = COLS.map(c => c.id);
 
+// ── Trinnmodell: Construction Execution Phases ──
+const TRINN_BYGG = {
+  1: { label: 'Forberedende arbeid',             short: 'T1 Forberedende',   color: '#1C2B54' },
+  2: { label: 'Riving og demontering',           short: 'T2 Riving',         color: '#612141' },
+  3: { label: 'Konstruksjon og rehabilitering',  short: 'T3 Konstruksjon',   color: '#F04E23' },
+  4: { label: 'Installasjon og oppbygging',      short: 'T4 Installasjon',   color: '#3B6E9F' },
+  5: { label: 'Ferdigstillelse',                 short: 'T5 Ferdigstillelse',color: '#31B18F' },
+};
+
+// ── Trinnmodell: Project Lifecycle Phases (Holmenkollbanen-modell) ──
+const TRINN_PROSJEKT = {
+  0: { label: 'Oppstart og planlegging',         short: 'T0 Oppstart',       color: '#1C2B54' },
+  1: { label: 'Forprosjekt',                     short: 'T1 Forprosjekt',    color: '#3B6E9F' },
+  2: { label: 'Detaljprosjektering',             short: 'T2 Detaljprosj.',   color: '#F04E23' },
+  3: { label: 'Kontrahering og samhandling',     short: 'T3 Kontrahering',   color: '#612141' },
+  4: { label: 'Oppfølging i byggefasen',         short: 'T4 Byggefase',      color: '#B85042' },
+  5: { label: 'FDV-dokumentasjon',               short: 'T5 FDV',            color: '#31B18F' },
+};
+
+// DATA: [sectionIdx, colId, workType, label, byggetrinn, prosjekttrinn]
 const DATA = [
   // 0 = Borgen – Smestad
-  [0, 'w1', 'sikring',   'Fundamenttiltak gjerdestolper'],
+  [0, 'w1', 'sikring',   'Fundamenttiltak gjerdestolper',               1, 4],
   // 1 = Smestad – Sørbyhaugen
-  [1, 'mar', 'konstruksjon', 'Straks tiltak skjæring/mur/drenering'],
-  [1, 'apr', 'konstruksjon', 'Straks tiltak skjæring/mur/drenering'],
-  [1, 'mai', 'konstruksjon', 'Permanente tiltak skjæring/mur'],
-  [1, 'jun', 'konstruksjon', 'Permanente tiltak skjæring/mur'],
-  [1, 'w1', 'spor',       'Demontering sporkonstruksjon'],
-  [1, 'w2', 'konstruksjon','Tiltak skjæring/mur/drenering'],
-  [1, 'w3', 'konstruksjon','Utbedring over-/underbygning'],
-  [1, 'w4', 'spor',       'Innlegging ballastmatter'],
+  [1, 'mar', 'konstruksjon', 'Straks tiltak skjæring/mur/drenering',    1, 4],
+  [1, 'apr', 'konstruksjon', 'Straks tiltak skjæring/mur/drenering',    1, 4],
+  [1, 'mai', 'konstruksjon', 'Permanente tiltak skjæring/mur',          1, 4],
+  [1, 'jun', 'konstruksjon', 'Permanente tiltak skjæring/mur',          1, 4],
+  [1, 'w1', 'spor',       'Demontering sporkonstruksjon',               2, 4],
+  [1, 'w2', 'konstruksjon','Tiltak skjæring/mur/drenering',             3, 4],
+  [1, 'w3', 'konstruksjon','Utbedring over-/underbygning',              3, 4],
+  [1, 'w4', 'spor',       'Innlegging ballastmatter',                   4, 4],
   // 2 = Smestad – Makrellbekken
-  [2, 'w1', 'konstruksjon', 'Masseutskifting Makrellbekken stasjon'],
-  [2, 'w3', 'spor',       'Utskiftning ballastpukk'],
-  [2, 'w4', 'spor',       'Ny ballastpukk / sporkonstruksjon'],
-  [2, 'w4', 'veksel',     'Sporveksler R0446/R0448'],
-  [2, 'w5', 'spor',       'Etablere sporkonstruksjon'],
-  [2, 'w5', 'elektro',    'Ny ALU-strømskinne'],
+  [2, 'w1', 'konstruksjon', 'Masseutskifting Makrellbekken stasjon',    2, 4],
+  [2, 'w3', 'spor',       'Utskiftning ballastpukk',                    2, 4],
+  [2, 'w4', 'spor',       'Ny ballastpukk / sporkonstruksjon',          3, 4],
+  [2, 'w4', 'veksel',     'Sporveksler R0446/R0448',                    4, 4],
+  [2, 'w5', 'spor',       'Etablere sporkonstruksjon',                  4, 4],
+  [2, 'w5', 'elektro',    'Ny ALU-strømskinne',                         4, 4],
   // 3 = Makrellbekken – Holmen
-  [3, 'w1', 'elektro',    'Kabelkanaler og kabeltiltak'],
-  [3, 'w2', 'elektro',    'Ny ALU-strømskinne'],
-  [3, 'w3', 'elektro',    'Ny ALU-strømskinne'],
+  [3, 'w1', 'elektro',    'Kabelkanaler og kabeltiltak',                3, 4],
+  [3, 'w2', 'elektro',    'Ny ALU-strømskinne',                         4, 4],
+  [3, 'w3', 'elektro',    'Ny ALU-strømskinne',                         4, 4],
   // 4 = Holmen – Hovseter
-  [4, 'w2', 'elektro',    'Kabelkanaler og kabeltiltak'],
+  [4, 'w2', 'elektro',    'Kabelkanaler og kabeltiltak',                3, 4],
   // 5 = Hovseter – Røa
-  [5, 'apr', 'bru',       'Rehab bru Sørkedalsveien og Ostedalsveien'],
-  [5, 'apr', 'sikring',   'Kjøresikkert gjerde Røatunnelen'],
-  [5, 'w1', 'veksel',     'Masseutskiftning + utskifting sporveksler'],
-  [5, 'w1', 'tunnel',     'Tiltak tunnel Røa stasjon'],
-  [5, 'w2', 'veksel',     'Utskifting sporveksler R0620/R0633'],
-  [5, 'w2', 'elektro',    'Sporvekselvarmeanlegg + lys'],
-  [5, 'w3', 'elektro',    'Kabelkanaler og kabeltiltak'],
+  [5, 'apr', 'bru',       'Rehab bru Sørkedalsveien og Ostedalsveien', 1, 4],
+  [5, 'apr', 'sikring',   'Kjøresikkert gjerde Røatunnelen',            1, 4],
+  [5, 'w1', 'veksel',     'Masseutskiftning + utskifting sporveksler',  2, 4],
+  [5, 'w1', 'tunnel',     'Tiltak tunnel Røa stasjon',                  3, 4],
+  [5, 'w2', 'veksel',     'Utskifting sporveksler R0620/R0633',         2, 4],
+  [5, 'w2', 'elektro',    'Sporvekselvarmeanlegg + lys',                4, 4],
+  [5, 'w3', 'elektro',    'Kabelkanaler og kabeltiltak',                3, 4],
   // 6 = Røa – Ekraveien
-  [6, 'apr', 'spor',      'Utkjøring skinner NSB40 til 49E1'],
-  [6, 'w1', 'spor',       'Utskiftning spor NSB40 til 49E1'],
-  [6, 'w1', 'sikring',    'Tiltak støyskjerm Grinidammen'],
-  [6, 'w2', 'tunnel',     'Rehabilitering tunnel Røa stasjon'],
-  [6, 'w3', 'tunnel',     'Rehabilitering tunnel Røa stasjon'],
-  [6, 'w4', 'tunnel',     'Rehabilitering tunnel Røa stasjon'],
+  [6, 'apr', 'spor',      'Utkjøring skinner NSB40 til 49E1',          1, 4],
+  [6, 'w1', 'spor',       'Utskiftning spor NSB40 til 49E1',           2, 4],
+  [6, 'w1', 'sikring',    'Tiltak støyskjerm Grinidammen',              3, 4],
+  [6, 'w2', 'tunnel',     'Rehabilitering tunnel Røa stasjon',          3, 4],
+  [6, 'w3', 'tunnel',     'Rehabilitering tunnel Røa stasjon',          3, 4],
+  [6, 'w4', 'tunnel',     'Rehabilitering tunnel Røa stasjon',          3, 4],
   // 7 = Ekraveien – Eiksmarka
-  [7, 'apr', 'bru',       'Rehab bru Grinidammen og Vollsveien'],
-  [7, 'w1', 'veksel',     'Masseutskiftning + utskifting sporveksler'],
-  [7, 'w2', 'veksel',     'Utskifting sporveksler R0806/R0817'],
-  [7, 'w2', 'elektro',    'Sporvekselvarmeanlegg + styreskap + lys'],
+  [7, 'apr', 'bru',       'Rehab bru Grinidammen og Vollsveien',       1, 4],
+  [7, 'w1', 'veksel',     'Masseutskiftning + utskifting sporveksler',  2, 4],
+  [7, 'w2', 'veksel',     'Utskifting sporveksler R0806/R0817',         2, 4],
+  [7, 'w2', 'elektro',    'Sporvekselvarmeanlegg + styreskap + lys',    4, 4],
   // 8 = Borgen – Eiksmarka (hele strekningen)
-  [8, 'w1', 'elektro',   'Jordledning i kanal og nedgraving i ballast'],
-  [8, 'w2', 'elektro',   'Jordledning i kanal og nedgraving i ballast'],
-  [8, 'w3', 'elektro',   'Jordledning i kanal og nedgraving i ballast'],
-  [8, 'w4', 'elektro',   'Jordledning i kanal og nedgraving i ballast'],
-  [8, 'w5', 'elektro',   'Jordledning i kanal og nedgraving i ballast'],
+  [8, 'w1', 'elektro',   'Jordledning i kanal og nedgraving i ballast', 4, 4],
+  [8, 'w2', 'elektro',   'Jordledning i kanal og nedgraving i ballast', 4, 4],
+  [8, 'w3', 'elektro',   'Jordledning i kanal og nedgraving i ballast', 4, 4],
+  [8, 'w4', 'elektro',   'Jordledning i kanal og nedgraving i ballast', 4, 4],
+  [8, 'w5', 'elektro',   'Jordledning i kanal og nedgraving i ballast', 4, 4],
 ];
 
 function hexToRgba(hex, a) {
@@ -436,6 +535,12 @@ function initFilters() {
   document.getElementById('f-section').addEventListener('change', applyFilters);
   document.getElementById('f-worktype').addEventListener('change', applyFilters);
   document.getElementById('f-period').addEventListener('change', applyFilters);
+  document.getElementById('f-trinn').addEventListener('change', applyFilters);
+  document.getElementById('f-trinn-model').addEventListener('change', function() {
+    populateTrinnFilter();
+    render();  // re-render to update bar data-trinn attributes and border colors
+    applyFilters();
+  });
 
   // Apply URL parameters
   const params = new URLSearchParams(window.location.search);
@@ -452,6 +557,17 @@ function initFilters() {
   if (params.has('period')) {
     document.getElementById('f-period').value = params.get('period');
   }
+  if (params.has('trinn') || params.has('model')) {
+    document.body.classList.add('trinn-active');
+    document.querySelector('.trinn-toggle').textContent = 'Skjul trinnmodell';
+    if (params.has('model')) {
+      document.getElementById('f-trinn-model').value = params.get('model');
+    }
+    populateTrinnFilter();
+    if (params.has('trinn')) {
+      document.getElementById('f-trinn').value = params.get('trinn');
+    }
+  }
   applyFilters();
 }
 
@@ -459,6 +575,7 @@ function resetFilters() {
   document.getElementById('f-section').value = 'all';
   document.getElementById('f-worktype').value = 'all';
   document.getElementById('f-period').value = 'all';
+  document.getElementById('f-trinn').value = 'all';
   applyFilters();
 }
 
@@ -478,11 +595,16 @@ function applyFilters() {
     }
   });
 
-  // Dim/show bars based on work type
+  // Dim/show bars based on work type AND trinn
+  const trinnVal = document.getElementById('f-trinn').value;
+  const trinnActive = document.body.classList.contains('trinn-active');
+  const trinnField = getActiveTrinnModel() === 'bygg' ? 'trinnBygg' : 'trinnProsjekt';
   const bars = document.querySelectorAll('.bar');
   bars.forEach(bar => {
     const wt = bar.dataset.wt;
-    if (wtVal === 'all' || wt === wtVal) {
+    const wtMatch = wtVal === 'all' || wt === wtVal;
+    const trinnMatch = !trinnActive || trinnVal === 'all' || bar.dataset[trinnField] === trinnVal;
+    if (wtMatch && trinnMatch) {
       bar.classList.remove('dimmed');
     } else {
       bar.classList.add('dimmed');
@@ -511,6 +633,48 @@ function applyFilters() {
     prepHeaders.forEach(el => el.style.display = '');
     bruddHeaders.forEach(el => el.style.display = '');
   }
+}
+
+// ── Trinnmodell functions ──
+function getActiveTrinnModel() {
+  const sel = document.getElementById('f-trinn-model');
+  return sel ? sel.value : 'bygg';
+}
+
+function getActiveTrinnMap() {
+  return getActiveTrinnModel() === 'bygg' ? TRINN_BYGG : TRINN_PROSJEKT;
+}
+
+function toggleTrinn() {
+  document.body.classList.toggle('trinn-active');
+  const btn = document.querySelector('.trinn-toggle');
+  const active = document.body.classList.contains('trinn-active');
+  btn.textContent = active ? 'Skjul trinnmodell' : 'Vis trinnmodell';
+  populateTrinnFilter();
+  applyFilters();
+}
+
+function populateTrinnFilter() {
+  const sel = document.getElementById('f-trinn');
+  const model = getActiveTrinnMap();
+  sel.innerHTML = '<option value="all">Alle trinn</option>';
+  for (const [k, v] of Object.entries(model)) {
+    const opt = document.createElement('option');
+    opt.value = k;
+    opt.textContent = v.short;
+    sel.appendChild(opt);
+  }
+}
+
+function renderTrinnLegend() {
+  const el = document.getElementById('trinn-legend');
+  const model = getActiveTrinnMap();
+  let lg = '<div class="legend-item" style="font-weight:700;font-size:14px;color:#1C2B54;">Trinnmodell:</div>';
+  for (const [k, v] of Object.entries(model)) {
+    const count = DATA.filter(d => d[getActiveTrinnModel() === 'bygg' ? 4 : 5] === parseInt(k)).length;
+    lg += `<div class="legend-item"><div class="trinn-legend-swatch" style="background:${v.color}"></div>${v.short} <span style="color:#7A8DA0;font-size:13px;">(${count})</span></div>`;
+  }
+  el.innerHTML = lg;
 }
 
 function render() {
@@ -572,7 +736,12 @@ function render() {
             h += `<div class="span-underbar ${ubCls}" style="background:${wt.color}"></div>`;
           }
           const barBg = (sp === 'mid' || sp === 'end') ? hexToRgba(wt.color, 0.35) : wt.color;
-          h += `<div class="bar${txtCls}${spanCls}" style="background:${barBg}" title="${a[3]}" data-wt="${a[2]}">${a[3]}</div>`;
+          const bTrinn = a[4], pTrinn = a[5];
+          const trinnModel = getActiveTrinnModel();
+          const trinnIdx = trinnModel === 'bygg' ? bTrinn : pTrinn;
+          const trinnObj = trinnModel === 'bygg' ? TRINN_BYGG[trinnIdx] : TRINN_PROSJEKT[trinnIdx];
+          const trinnColor = trinnObj ? trinnObj.color : 'transparent';
+          h += `<div class="bar${txtCls}${spanCls}" style="background:${barBg};--trinn-color:${trinnColor}" title="${a[3]}" data-wt="${a[2]}" data-trinn="${trinnIdx}" data-trinn-bygg="${bTrinn}" data-trinn-prosjekt="${pTrinn}">${a[3]}</div>`;
         });
         h += '</div></td>';
       }
@@ -592,6 +761,9 @@ function render() {
   lg += '<div class="legend-divider"></div>';
   lg += `<div class="legend-item"><span class="brudd-tag">STENGT SPOR</span> Stengt spor</div>`;
   legend.innerHTML = lg;
+
+  // Trinn legend
+  renderTrinnLegend();
 
   // Note
   document.getElementById('note').innerHTML =
