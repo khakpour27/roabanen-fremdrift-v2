@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Røabanen Driftsoversikt</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+:root {
+  --bg:           #07101F;
+  --bg-card:      #0F1E38;
+  --bg-card-alt:  #0A1528;
+  --bg-hover:     #152340;
+  --text:         #D8E8F5;
+  --text-muted:   #6A8FAD;
+  --text-dim:     #3A5A78;
+  --accent:       #F04E23;
+  --accent-light: #FF7A56;
+  --green:        #31B18F;
+  --purple:       #612141;
+  --steel:        #3B6E9F;
+  --border:       rgba(255,255,255,0.07);
+  --border-s:     rgba(255,255,255,0.13);
+  --shadow:       0 4px 32px rgba(0,0,0,0.55);
+  --shadow-sm:    0 2px 12px rgba(0,0,0,0.3);
+  --glow-o:       0 0 20px rgba(240,78,35,0.25);
+  --glow-b:       0 0 20px rgba(59,110,159,0.25);
+  --r:            12px;
+  --r-sm:         8px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{min-height:100%;}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp   {from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn   {from{opacity:0}to{opacity:1}}
+@keyframes slideL   {from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:translateX(0)}}
+@keyframes slideR   {from{opacity:0;transform:translateX(100%)}to{opacity:1;transform:translateX(0)}}
+@keyframes growW    {from{width:0}to{width:var(--tw)}}
+@keyframes pulse    {0%,100%{box-shadow:0 0 0 0 rgba(240,78,35,0.4)}50%{box-shadow:0 0 0 6px rgba(240,78,35,0)}}
+
+/* ── LAYOUT ── */
+.app{display:flex;flex-direction:column;min-height:100vh;}
+.main{flex:1;padding:28px 32px;max-width:1600px;margin:0 auto;width:100%;}
+
+/* ── HEADER ── */
+.cowi-bar{
+  background:linear-gradient(90deg,#0B1530 0%,#1C2B54 50%,#0B1530 100%);
+  padding:13px 32px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid rgba(240,78,35,0.28);
+  position:sticky;top:0;z-index:100;
+}
+.cowi-logo svg{height:44px;width:auto;display:block;}
+.hdr-right{display:flex;align-items:center;gap:20px;}
+.cowi-tag{font-size:12px;color:rgba(255,255,255,0.45);font-style:italic;}
+.back-link{
+  font-size:12px;color:var(--accent);text-decoration:none;
+  border:1px solid rgba(240,78,35,0.35);padding:5px 12px;border-radius:6px;
+  transition:all .2s;white-space:nowrap;
+}
+.back-link:hover{background:rgba(240,78,35,0.1);border-color:var(--accent);}
+
+/* ── PAGE TITLE ── */
+.pg-title{margin-bottom:22px;animation:fadeUp .5s ease both;}
+.pg-title h1{font-size:30px;font-weight:700;letter-spacing:-.3px;}
+.pg-title h1 span{color:var(--accent);}
+.pg-title .sub{font-size:14px;color:var(--text-muted);margin-top:5px;}
+
+/* ── FILTER PANEL ── */
+.filter-panel{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);
+  padding:15px 20px;margin-bottom:22px;animation:fadeUp .5s .08s ease both;
+}
+.filter-row{display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
+.fgroup{display:flex;align-items:center;gap:7px;}
+.fgroup label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap;}
+.fselect{
+  background:var(--bg-card-alt);border:1px solid var(--border-s);border-radius:6px;
+  color:var(--text);font-family:inherit;font-size:13px;padding:6px 28px 6px 10px;
+  cursor:pointer;appearance:none;-webkit-appearance:none;min-width:155px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 11 11'%3E%3Cpath fill='%236A8FAD' d='M5.5 7.5L1 2h9z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 8px center;
+}
+.fselect:focus{outline:none;border-color:var(--accent);}
+.freset{
+  background:transparent;border:1px solid var(--border-s);border-radius:6px;
+  color:var(--text-muted);font-family:inherit;font-size:12px;padding:6px 13px;cursor:pointer;
+  transition:all .2s;
+}
+.freset:hover{border-color:var(--accent);color:var(--accent);}
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;}
+.chip{
+  display:flex;align-items:center;gap:5px;
+  background:rgba(240,78,35,0.1);border:1px solid rgba(240,78,35,0.28);
+  border-radius:20px;font-size:11px;padding:3px 9px;color:var(--accent-light);
+  animation:fadeIn .2s ease;
+}
+.chip-x{background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;line-height:1;padding:0 1px;}
+
+/* ── KPI ROW ── */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+.kpi-card{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);
+  padding:18px 20px;display:flex;align-items:flex-start;gap:14px;
+  animation:fadeUp .5s ease both;
+  transition:transform .2s,box-shadow .2s,border-color .2s;
+  position:relative;overflow:hidden;cursor:default;
+}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--kpi-accent,var(--accent));border-radius:3px 0 0 3px;}
+.kpi-card:hover{transform:translateY(-2px);border-color:var(--border-s);box-shadow:var(--glow-b);}
+.kpi-icon{
+  width:42px;height:42px;background:rgba(240,78,35,0.09);border:1px solid rgba(240,78,35,0.18);
+  border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.kpi-body{}
+.kpi-lbl{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:3px;}
+.kpi-val{font-size:34px;font-weight:700;color:var(--text);line-height:1;letter-spacing:-1px;}
+.kpi-unit{font-size:12px;color:var(--text-muted);margin-top:4px;}
+
+/* ── PANEL ── */
+.panel{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);
+  padding:20px 22px;margin-bottom:22px;animation:fadeUp .5s ease both;
+}
+.ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.pt{font-size:15px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:9px;}
+.pt-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;animation:pulse 2s 2s ease infinite;}
+.pbadge{font-size:11px;font-weight:600;color:var(--text-muted);background:rgba(255,255,255,0.05);padding:3px 8px;border-radius:4px;}
+
+/* ── GANTT ── */
+.gantt-scroll{overflow-x:auto;}
+.gantt{min-width:900px;border-radius:var(--r-sm);overflow:hidden;border:1px solid rgba(255,255,255,0.06);}
+
+/* Each row is a flex container */
+.grow-row{display:flex;}
+.gcell-label{width:188px;flex-shrink:0;}
+.gcell{flex:1;min-width:0;}
+
+/* Phase header row */
+.gantt-ph-row{display:flex;}
+.gph-spacer{width:188px;flex-shrink:0;background:#0A1424;border:1px solid rgba(255,255,255,0.05);}
+.gph{display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.6px;padding:9px 4px;
+  border:1px solid rgba(255,255,255,0.05);}
+.gph.prep{background:#0E1A30;color:var(--text-muted);}
+.gph.brudd{background:#2C0B1C;color:#C77090;border-top:2px solid #612141;}
+
+/* Time header row */
+.gth{text-align:center;font-size:11px;font-weight:600;padding:7px 2px;
+  border:1px solid rgba(255,255,255,0.04);white-space:nowrap;}
+.gth.prep{background:#0D1930;color:var(--text-muted);}
+.gth.brudd{background:#200814;color:#B06080;}
+.gth.lbl{background:#0D1930;color:var(--text-muted);font-size:12px;padding:7px 12px;text-align:left;}
+
+/* Data rows */
+.gdr{display:flex;}
+.gdr.row-odd .gcell{background:rgba(255,255,255,0.015);}
+.gdr.row-even .gcell{background:transparent;}
+.gdr.row-odd .gcell.bcol{background:rgba(97,33,65,0.09);}
+.gdr.row-even .gcell.bcol{background:rgba(97,33,65,0.05);}
+.gdr.row-odd .gcell.mcol{background:rgba(59,110,159,0.07);}
+.gdr.row-even .gcell.mcol{background:rgba(59,110,159,0.04);}
+
+.glabel{
+  padding:9px 13px;
+  border:1px solid rgba(255,255,255,0.05);
+  border-right:2px solid rgba(255,255,255,0.11);
+  background:#0A1828;
+}
+.gdr.row-odd .glabel{background:#0C1B30;}
+.gsname{font-size:12px;font-weight:600;color:var(--text);line-height:1.3;}
+.gskm{font-size:10px;color:var(--text-muted);margin-top:3px;}
+
+.gcell{padding:4px 3px;border:1px solid rgba(255,255,255,0.04);
+  display:flex;flex-direction:column;gap:3px;}
+.gcell.flush-r{padding-right:0;}
+.gcell.flush-l{padding-left:0;}
+.gcell.bridge-r{border-right-color:transparent;}
+.gcell.bridge-l{border-left-color:transparent;}
+
+/* Activity bars */
+.gbar-wrap{position:relative;}
+.sub{height:4px;margin-bottom:-3px;position:relative;z-index:2;}
+.sub.s{border-radius:3px 0 0 3px;}
+.sub.e{border-radius:0 3px 3px 0;}
+.sub.m{border-radius:0;}
+.sub.solo{border-radius:3px;}
+
+.gbar{
+  border-radius:4px;padding:4px 6px;font-size:11px;font-weight:500;
+  color:#fff;line-height:1.3;word-break:break-word;hyphens:auto;
+  cursor:pointer;position:relative;z-index:1;
+  animation:slideL .4s ease both;
+  transition:transform .15s,box-shadow .15s,opacity .2s;
+}
+.gbar:hover{transform:scale(1.03) translateZ(0);box-shadow:0 2px 12px rgba(0,0,0,0.5);z-index:10;}
+.gbar.lt{color:#0A1828;}
+.gbar.dimmed{opacity:.12;}
+.gbar.sp-start{border-top-right-radius:0;border-bottom-right-radius:0;}
+.gbar.sp-mid{border-radius:0;opacity:.32;color:#8AADC0 !important;}
+.gbar.sp-end{border-top-left-radius:0;border-bottom-left-radius:0;opacity:.32;color:#8AADC0 !important;}
+
+/* ── CHART ROW ── */
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px;}
+
+/* ── DONUT ── */
+.donut-wrap{display:flex;align-items:center;gap:20px;}
+.donut-svg-wrap{position:relative;flex-shrink:0;}
+.donut-ctr{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  text-align:center;pointer-events:none;
+}
+.donut-cval{font-size:30px;font-weight:700;color:var(--text);line-height:1;}
+.donut-clbl{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
+.donut-leg{flex:1;min-width:0;}
+.dl-item{
+  display:flex;align-items:center;gap:9px;padding:4px 6px;
+  cursor:pointer;border-radius:6px;transition:background .15s;
+}
+.dl-item:hover{background:rgba(255,255,255,0.04);}
+.dl-swatch{width:11px;height:11px;border-radius:2px;flex-shrink:0;}
+.dl-lbl{font-size:11px;color:var(--text-muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dl-cnt{font-size:13px;font-weight:700;color:var(--text);}
+.dl-pct{font-size:10px;color:var(--text-dim);min-width:28px;text-align:right;}
+.seg{transition:opacity .2s,stroke-width .2s;cursor:pointer;}
+
+/* ── SECTION BARS ── */
+.sbars{display:flex;flex-direction:column;gap:9px;}
+.sbar-row{display:flex;align-items:center;gap:10px;cursor:pointer;}
+.sbar-row:hover .sbar-fill{filter:brightness(1.25);}
+.sbar-lbl{font-size:11px;color:var(--text-muted);width:135px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sbar-track{flex:1;height:18px;background:rgba(255,255,255,0.05);border-radius:3px;overflow:hidden;}
+.sbar-fill{
+  height:100%;border-radius:3px;width:0;
+  background:linear-gradient(90deg,#3B6E9F,#31B18F);
+  transition:width .9s cubic-bezier(.25,.46,.45,.94);
+  display:flex;align-items:center;padding-left:6px;
+}
+.sbar-n{font-size:10px;font-weight:700;color:rgba(255,255,255,0.75);white-space:nowrap;}
+
+/* ── HEATMAP ── */
+.hm-scroll{overflow-x:auto;}
+.hm-grid{
+  display:grid;gap:3px;min-width:640px;
+}
+.hm-row-lbl{
+  display:flex;align-items:center;gap:7px;
+  font-size:11px;font-weight:600;white-space:nowrap;padding-right:6px;
+}
+.hm-col-hdr{font-size:10px;color:var(--text-dim);text-align:center;padding:3px 2px;font-weight:500;}
+.hm-col-hdr.b{color:#B06080;}
+.hm-cell{
+  height:34px;border-radius:4px;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;cursor:default;transition:transform .15s;
+  animation:fadeIn .4s ease both;
+}
+.hm-cell:hover{transform:scale(1.1);z-index:2;position:relative;}
+.hm-empty{height:34px;border-radius:4px;background:rgba(255,255,255,0.025);animation:fadeIn .4s ease both;}
+
+/* ── LEGEND ── */
+.wt-leg{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
+.wt-li{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted);}
+.wt-sw{width:12px;height:9px;border-radius:2px;flex-shrink:0;}
+
+/* ── TOOLTIP ── */
+.tt{
+  position:fixed;z-index:500;pointer-events:none;
+  background:#1a2d52;border:1px solid var(--border-s);border-radius:8px;
+  padding:9px 13px;font-size:12px;transform:translateX(-50%) translateY(-100%);
+  margin-top:-10px;box-shadow:var(--shadow);max-width:250px;
+  animation:fadeIn .15s ease;
+}
+.tt-title{font-weight:600;color:var(--text);margin-bottom:5px;line-height:1.4;}
+.tt-row{display:flex;align-items:center;gap:6px;margin-top:3px;}
+.tt-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.tt-txt{color:var(--text-muted);font-size:11px;}
+
+/* ── DETAIL PANEL ── */
+.det-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;animation:fadeIn .2s ease;}
+.det-panel{
+  position:fixed;right:0;top:0;height:100vh;width:340px;
+  background:#0F1B35;border-left:1px solid var(--border-s);
+  z-index:201;animation:slideR .3s ease;overflow-y:auto;
+  padding:28px 22px;box-shadow:-8px 0 40px rgba(0,0,0,.55);
+}
+.det-close{
+  position:absolute;top:14px;right:14px;
+  background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:6px;
+  color:var(--text-muted);cursor:pointer;width:30px;height:30px;
+  display:flex;align-items:center;justify-content:center;font-size:17px;
+  transition:all .15s;
+}
+.det-close:hover{background:rgba(240,78,35,.15);color:var(--accent);border-color:var(--accent);}
+.det-badge{
+  display:inline-flex;align-items:center;gap:6px;padding:5px 12px;
+  border-radius:20px;font-size:11px;font-weight:700;margin-bottom:14px;
+}
+.det-lbl{font-size:17px;font-weight:700;color:var(--text);margin-bottom:18px;line-height:1.4;}
+.det-meta{display:flex;flex-direction:column;gap:10px;}
+.det-row{
+  padding:11px;background:rgba(255,255,255,.04);border-radius:8px;
+  border:1px solid var(--border);
+}
+.det-k{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;}
+.det-v{font-size:14px;color:var(--text);font-weight:500;margin-top:2px;}
+.det-vsub{font-size:11px;color:var(--text-muted);margin-top:2px;}
+
+/* ── FOOTER ── */
+.footer{background:#0D1B35;border-top:1px solid var(--border);padding:13px 32px;text-align:center;}
+.footer-t{font-size:11px;color:var(--text-dim);letter-spacing:.3px;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1100px){
+  .kpi-row{grid-template-columns:repeat(2,1fr);}
+  .chart-row{grid-template-columns:1fr;}
+}
+@media(max-width:768px){
+  .main{padding:14px;}
+  .kpi-row{grid-template-columns:repeat(2,1fr);gap:10px;}
+  .kpi-val{font-size:26px;}
+  .det-panel{width:100%;}
+  .cowi-tag,.back-link{display:none;}
+}
+@media(max-width:460px){
+  .kpi-row{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div id="root">
+  <div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#3A5A78;font-family:sans-serif;font-size:15px;letter-spacing:.3px;">
+    Laster inn dashboard…
+  </div>
+</div>
+
+<!-- ── DATA (plain JS) ── -->
+<script>
+const SECTIONS=[
+  {name:'Borgen – Smestad',       km:'km 2,8 – 4,0'},
+  {name:'Smestad – Sørbyhaugen',  km:'km 4,0 – 4,5'},
+  {name:'Smestad – Makrellbekken',km:'km 4,0 – 4,9'},
+  {name:'Makrellbekken – Holmen', km:'km 4,9 – 5,4'},
+  {name:'Holmen – Hovseter',      km:'km 5,4 – 6,1'},
+  {name:'Hovseter – Røa',         km:'km 6,0 – 6,8'},
+  {name:'Røa – Ekraveien',        km:'km 6,8 – 7,5'},
+  {name:'Ekraveien – Eiksmarka',  km:'km 7,5 – 8,4'},
+  {name:'Borgen – Eiksmarka',     km:'km 2,8 – 8,5'},
+];
+const RENDER_ORDER=[8,0,1,2,3,4,5,6,7];
+const WT={
+  spor:        {label:'Sporarbeid',              color:'#1C2B54',lightBg:false},
+  veksel:      {label:'Sporveksler',             color:'#612141',lightBg:false},
+  elektro:     {label:'Elektro / kabel',         color:'#31B18F',lightBg:false},
+  bru:         {label:'Bru-rehabilitering',      color:'#B85042',lightBg:false},
+  konstruksjon:{label:'Konstruksjon / drenering',color:'#EFE1D6',lightBg:true},
+  tunnel:      {label:'Tunnel',                  color:'#3B6E9F',lightBg:false},
+  sikring:     {label:'Gjerde / sikring',        color:'#D5F0E9',lightBg:true},
+};
+const COLS=[
+  {id:'mar', label:'',              brudd:false,period:'prep',mar:true},
+  {id:'apr', label:'Apr',           brudd:false,period:'prep'},
+  {id:'mai', label:'Mai',           brudd:false,period:'prep'},
+  {id:'jun', label:'Jun',           brudd:false,period:'prep'},
+  {id:'w1',  label:'3.–9. jul',     brudd:true, period:'brudd'},
+  {id:'w2',  label:'10.–16. jul',   brudd:true, period:'brudd'},
+  {id:'w3',  label:'17.–23. jul',   brudd:true, period:'brudd'},
+  {id:'w4',  label:'24.–30. jul',   brudd:true, period:'brudd'},
+  {id:'w5',  label:'31. jul–6. aug',brudd:true, period:'brudd'},
+  {id:'w6',  label:'7.–13. aug',    brudd:true, period:'brudd'},
+];
+const COL_IDS=COLS.map(c=>c.id);
+const DATA=[
+  [0,'w1', 'sikring',      'Fundamenttiltak gjerdestolper',            1, 4],
+  [1,'mar','konstruksjon', 'Straks tiltak skjæring/mur/drenering',     1, 4],
+  [1,'apr','konstruksjon', 'Straks tiltak skjæring/mur/drenering',     1, 4],
+  [1,'mai','konstruksjon', 'Permanente tiltak skjæring/mur',           1, 4],
+  [1,'jun','konstruksjon', 'Permanente tiltak skjæring/mur',           1, 4],
+  [1,'w1', 'spor',         'Demontering sporkonstruksjon',             2, 4],
+  [1,'w2', 'konstruksjon', 'Tiltak skjæring/mur/drenering',           3, 4],
+  [1,'w3', 'konstruksjon', 'Utbedring over-/underbygning',            3, 4],
+  [1,'w4', 'spor',         'Innlegging ballastmatter',                4, 4],
+  [2,'w1', 'konstruksjon', 'Masseutskifting Makrellbekken stasjon',   2, 4],
+  [2,'w3', 'spor',         'Utskiftning ballastpukk',                 2, 4],
+  [2,'w4', 'spor',         'Ny ballastpukk / sporkonstruksjon',       3, 4],
+  [2,'w4', 'veksel',       'Sporveksler R0446/R0448',                 4, 4],
+  [2,'w5', 'spor',         'Etablere sporkonstruksjon',               4, 4],
+  [2,'w5', 'elektro',      'Ny ALU-strømskinne',                      4, 4],
+  [3,'w1', 'elektro',      'Kabelkanaler og kabeltiltak',             3, 4],
+  [3,'w2', 'elektro',      'Ny ALU-strømskinne',                      4, 4],
+  [3,'w3', 'elektro',      'Ny ALU-strømskinne',                      4, 4],
+  [4,'w2', 'elektro',      'Kabelkanaler og kabeltiltak',             3, 4],
+  [5,'apr','bru',          'Rehab bru Sørkedalsveien og Ostedalsveien',1, 4],
+  [5,'apr','sikring',      'Kjøresikkert gjerde Røatunnelen',          1, 4],
+  [5,'w1', 'veksel',       'Masseutskiftning + utskifting sporveksler',2, 4],
+  [5,'w1', 'tunnel',       'Tiltak tunnel Røa stasjon',               3, 4],
+  [5,'w2', 'veksel',       'Utskifting sporveksler R0620/R0633',      2, 4],
+  [5,'w2', 'elektro',      'Sporvekselvarmeanlegg + lys',             4, 4],
+  [5,'w3', 'elektro',      'Kabelkanaler og kabeltiltak',             3, 4],
+  [6,'apr','spor',         'Utkjøring skinner NSB40 til 49E1',        1, 4],
+  [6,'w1', 'spor',         'Utskiftning spor NSB40 til 49E1',         2, 4],
+  [6,'w1', 'sikring',      'Tiltak støyskjerm Grinidammen',           3, 4],
+  [6,'w2', 'tunnel',       'Rehabilitering tunnel Røa stasjon',       3, 4],
+  [6,'w3', 'tunnel',       'Rehabilitering tunnel Røa stasjon',       3, 4],
+  [6,'w4', 'tunnel',       'Rehabilitering tunnel Røa stasjon',       3, 4],
+  [6,'apr','bru',          'Rehab bru Grinidammen',                   1, 4],
+  [7,'apr','bru',          'Rehab bru Vollsveien',                    1, 4],
+  [7,'w1', 'veksel',       'Masseutskiftning + utskifting sporveksler',2, 4],
+  [7,'w2', 'veksel',       'Utskifting sporveksler R0806/R0817',      4, 4],
+  [7,'w2', 'elektro',      'Sporvekselvarmeanlegg + styreskap + lys', 4, 4],
+  [8,'w1', 'elektro',      'Jordledning i kanal og nedgraving i ballast',4, 4],
+  [8,'w2', 'elektro',      'Jordledning i kanal og nedgraving i ballast',4, 4],
+  [8,'w3', 'elektro',      'Jordledning i kanal og nedgraving i ballast',4, 4],
+  [8,'w4', 'elektro',      'Jordledning i kanal og nedgraving i ballast',4, 4],
+  [8,'w5', 'elektro',      'Jordledning i kanal og nedgraving i ballast',4, 4],
+];
+
+function hexToRgba(h,a){
+  const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+function spanPos(si,colId,wt,label){
+  const ci=COL_IDS.indexOf(colId);
+  const prev=ci>0&&DATA.some(d=>d[0]===si&&d[1]===COL_IDS[ci-1]&&d[2]===wt&&d[3]===label);
+  const next=ci<COL_IDS.length-1&&DATA.some(d=>d[0]===si&&d[1]===COL_IDS[ci+1]&&d[2]===wt&&d[3]===label);
+  if(prev&&next)return'mid';if(next)return'start';if(prev)return'end';return'';
+}
+function filterData(data,filters){
+  return data.filter(([si,colId,wt])=>{
+    if(filters.section!=='all'&&si!==parseInt(filters.section))return false;
+    if(filters.workType!=='all'&&wt!==filters.workType)return false;
+    const col=COLS.find(c=>c.id===colId);
+    if(filters.period==='prep'&&col.brudd)return false;
+    if(filters.period==='brudd'&&!col.brudd)return false;
+    return true;
+  });
+}
+function sectionPeriodData(filters){
+  return DATA.filter(([si,colId])=>{
+    if(filters.section!=='all'&&si!==parseInt(filters.section))return false;
+    const col=COLS.find(c=>c.id===colId);
+    if(filters.period==='prep'&&col.brudd)return false;
+    if(filters.period==='brudd'&&!col.brudd)return false;
+    return true;
+  });
+}
+function countByWT(data){
+  const c={};Object.keys(WT).forEach(k=>c[k]=0);
+  data.forEach(([,,wt])=>{c[wt]=(c[wt]||0)+1;});return c;
+}
+function countBySection(data){
+  const c={};SECTIONS.forEach((_,i)=>c[i]=0);
+  data.forEach(([si])=>{c[si]=(c[si]||0)+1;});return c;
+}
+function heatmapData(data){
+  const m={};
+  Object.keys(WT).forEach(wt=>{m[wt]={};COL_IDS.forEach(id=>{m[wt][id]=0;});});
+  data.forEach(([,colId,wt])=>{if(m[wt])m[wt][colId]++;});return m;
+}
+function daysUntil(){
+  const d=new Date('2028-07-03')-new Date();
+  return Math.max(0,Math.ceil(d/86400000));
+}
+const COWI_PATH="M245.43,96.14c-.76-2.38.54-3.79,2.92-3.79h6.06V88.13H215.14v4.22l9,.05a5.31,5.31,0,0,1,5.25,3.74L253.06,169H262l16.17-50.51L293.73,169H304l21.74-71.13c1-3.56,3.46-5.46,7-5.46,2.39,0,3.68,1.79,3.68,4.22v63.93c0,2.38-1.24,4.22-3.68,4.22H319.53V169h49.6v-4.22h-13.2c-2.38,0-3.68-1.84-3.68-4.22V96.62c0-2.43,1.3-4.27,3.68-4.27h13.2V88.13H305.74v4.22l7.35.05c5.3,0,7.31,2.81,5.79,8.12l-15,49.11L287.29,96.14c-.75-2.38.54-3.79,2.87-3.79h9.52V88.13H260.41v4.22l5.57.05a5.3,5.3,0,0,1,5.25,3.74L275.18,109l-12.66,39.53-17.09-52.4Zm-76.15,32.45c0,21,7.73,36.83,21.2,36.83s21.15-15.79,21.15-36.83S203.89,91.7,190.48,91.7s-21.2,15.79-21.2,36.89ZM122.66,87.21a24.48,24.48,0,0,1,13.52,3.84c5.24,3.08,8.54,1.89,8.54-2.92V85.26H149v35.05h-3.84C143,101.76,135.47,91.7,122.66,91.7c-14.88,0-21.21,15.79-21.21,36.89s6.33,36.72,21.21,36.72c18.38,0,27.09-13.41,30.28-36.72l1.14-8.33c2.81-19.36,15.79-33.05,36.4-33.05C213.85,87.21,228,105,228,128.59s-14.16,41.26-37.53,41.26c-18.34,0-30.67-10.76-35.15-26.77l-.11-.7-.22,1.13c-4.54,13.8-12.5,26.34-32.34,26.34-23.42,0-37-17.63-37-41.26s12.6-41.38,37-41.38Z";
+</script>
+
+<!-- ── REACT APP ── -->
+<script type="text/babel">
+const {useState,useEffect,useRef,useMemo,useCallback,memo}=React;
+
+/* ── Animated counter ── */
+function useCountUp(target,ms=1100,delay=0){
+  const[v,setV]=useState(0);
+  useEffect(()=>{
+    if(!target){setV(0);return;}
+    let start=null,raf;
+    const t=setTimeout(()=>{
+      function step(ts){
+        if(!start)start=ts;
+        const p=Math.min((ts-start)/ms,1);
+        setV(Math.round((1-Math.pow(1-p,3))*target));
+        if(p<1)raf=requestAnimationFrame(step);
+      }
+      raf=requestAnimationFrame(step);
+    },delay);
+    return()=>{clearTimeout(t);cancelAnimationFrame(raf);};
+  },[target,ms,delay]);
+  return v;
+}
+
+/* ── SVG icons ── */
+const ICONS={
+  activity:<><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></>,
+  map:<><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></>,
+  calendar:<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>,
+  clock:<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>,
+};
+function Icon({name,size=20,color='currentColor'}){
+  return(
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      {ICONS[name]}
+    </svg>
+  );
+}
+
+/* ── Header ── */
+function Header(){
+  return(
+    <header className="cowi-bar">
+      <a href="https://www.cowi.com" target="_blank" rel="noopener" style={{display:'flex'}}>
+        <svg viewBox="0 0 453.54 255.12" xmlns="http://www.w3.org/2000/svg" style={{height:42,width:'auto'}}>
+          <path fill="#F04E23" d={COWI_PATH}/>
+        </svg>
+      </a>
+      <div className="hdr-right">
+        <span className="cowi-tag">Together, we shape a sustainable and liveable world</span>
+        <a className="back-link" href="index.html">← Gantt-visning</a>
+        <a className="back-link" href="trinnmodell.html">Trinnmodell</a>
+      </div>
+    </header>
+  );
+}
+
+/* ── Filter Panel ── */
+function FilterPanel({filters,setFilters}){
+  const chips=[];
+  if(filters.section!=='all')chips.push({key:'section',label:SECTIONS[+filters.section].name});
+  if(filters.workType!=='all')chips.push({key:'workType',label:WT[filters.workType].label});
+  if(filters.period!=='all')chips.push({key:'period',label:filters.period==='prep'?'Forberedende':'Stengt spor'});
+  const set=k=>v=>setFilters(f=>({...f,[k]:v}));
+  return(
+    <div className="filter-panel">
+      <div className="filter-row">
+        <div className="fgroup">
+          <label>Strekning</label>
+          <select className="fselect" value={filters.section} onChange={e=>set('section')(e.target.value)}>
+            <option value="all">Alle strekninger</option>
+            {SECTIONS.map((s,i)=><option key={i} value={i}>{s.name}</option>)}
+          </select>
+        </div>
+        <div className="fgroup">
+          <label>Arbeidstype</label>
+          <select className="fselect" value={filters.workType} onChange={e=>set('workType')(e.target.value)}>
+            <option value="all">Alle typer</option>
+            {Object.entries(WT).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}
+          </select>
+        </div>
+        <div className="fgroup">
+          <label>Periode</label>
+          <select className="fselect" value={filters.period} onChange={e=>set('period')(e.target.value)}>
+            <option value="all">Hele perioden</option>
+            <option value="prep">Forberedende (apr–jun)</option>
+            <option value="brudd">Stengt spor (jul–aug)</option>
+          </select>
+        </div>
+        {chips.length>0&&<button className="freset" onClick={()=>setFilters({section:'all',workType:'all',period:'all'})}>Nullstill</button>}
+      </div>
+      {chips.length>0&&(
+        <div className="chips">
+          {chips.map(c=>(
+            <span key={c.key} className="chip">
+              {c.label}
+              <button className="chip-x" onClick={()=>set(c.key)('all')}>×</button>
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── KPI Card ── */
+function KpiCard({icon,label,value,unit,delay=0,accent='#F04E23'}){
+  const v=useCountUp(value,1100,delay);
+  return(
+    <div className="kpi-card" style={{animationDelay:`${delay}ms`,'--kpi-accent':accent}}>
+      <div className="kpi-icon" style={{background:`${accent}18`,border:`1px solid ${accent}2E`}}>
+        <Icon name={icon} size={20} color={accent}/>
+      </div>
+      <div className="kpi-body">
+        <div className="kpi-lbl">{label}</div>
+        <div className="kpi-val">{v.toLocaleString('no-NO')}</div>
+        {unit&&<div className="kpi-unit">{unit}</div>}
+      </div>
+    </div>
+  );
+}
+
+/* ── KPI Row ── */
+function KpiRow({filteredData}){
+  const days=useMemo(daysUntil,[]);
+  const secs=useMemo(()=>new Set(filteredData.map(d=>d[0])).size,[filteredData]);
+  return(
+    <div className="kpi-row">
+      <KpiCard icon="activity" label="Totale aktiviteter" value={filteredData.length} unit={`av ${DATA.length} totalt`} delay={0}/>
+      <KpiCard icon="map" label="Aktive strekninger" value={secs} unit="av 9 strekninger" delay={90} accent="#31B18F"/>
+      <KpiCard icon="calendar" label="Dager til brudd" value={days} unit="til 3. juli 2028" delay={180} accent="#3B6E9F"/>
+      <KpiCard icon="clock" label="Bruddperiode" value={42} unit="dager (3. jul – 13. aug)" delay={270} accent="#612141"/>
+    </div>
+  );
+}
+
+/* ── Gantt bar ── */
+function GBar({si,colId,wt,label,dimmed,rowIdx,colIdx}){
+  const w=WT[wt];
+  const pos=spanPos(si,colId,wt,label);
+  const isDimBg=pos==='mid'||pos==='end';
+  const bg=dimmed?hexToRgba(w.color,0.22):isDimBg?hexToRgba(w.color,0.32):w.color;
+  const ubClass=pos==='start'?'s':pos==='end'?'e':pos==='mid'?'m':'solo';
+  const delay=rowIdx*28+colIdx*6;
+  return(
+    <div className="gbar-wrap">
+      {pos&&<div className={`sub ${ubClass}`} style={{background:w.color,animationDelay:`${delay}ms`}}/>}
+      <div className={`gbar${w.lightBg?' lt':''}${pos?` sp-${pos}`:''}${dimmed?' dimmed':''}`}
+        style={{background:bg,animationDelay:`${delay+40}ms`}}>
+        {label}
+      </div>
+    </div>
+  );
+}
+
+/* ── Gantt Panel (memoized) ── */
+const GanttPanel=memo(function GanttPanel({filters,onBarClick,setTooltip}){
+  const visCols=useMemo(()=>{
+    if(filters.period==='prep')return COLS.filter(c=>!c.brudd);
+    if(filters.period==='brudd')return COLS.filter(c=>c.brudd);
+    return COLS;
+  },[filters.period]);
+
+  const prepN=visCols.filter(c=>!c.brudd).length;
+  const bruddN=visCols.filter(c=>c.brudd).length;
+
+  /* All bars to display in gantt = section+period filtered;
+     workType non-matching bars are shown dimmed */
+  const spData=useMemo(()=>sectionPeriodData(filters),[filters.section,filters.period]);
+
+  const dataMap=useMemo(()=>{
+    const m={};
+    spData.forEach(([si,colId,wt,label])=>{
+      const k=`${si}_${colId}`;if(!m[k])m[k]=[];m[k].push([wt,label]);
+    });
+    return m;
+  },[spData]);
+
+  const onHover=useCallback((e,si,colId,wt,label)=>{
+    const r=e.currentTarget.getBoundingClientRect();
+    setTooltip({x:r.left+r.width/2,y:r.top,si,colId,wt,label});
+  },[setTooltip]);
+  const onLeave=useCallback(()=>setTooltip(null),[setTooltip]);
+
+  return(
+    <div className="panel" style={{animationDelay:'.3s'}}>
+      <div className="ph">
+        <div className="pt">
+          <div className="pt-dot"/>
+          Fremdriftsplan — Gantt-oversikt
+        </div>
+        <span className="pbadge">{DATA.length} aktiviteter · 9 strekninger</span>
+      </div>
+      <div className="gantt-scroll">
+        <div className="gantt">
+          {/* Phase header */}
+          <div className="gantt-ph-row">
+            <div className="gph-spacer"/>
+            {prepN>0&&<div className="gph prep" style={{flex:prepN}}>Forberedende 2028</div>}
+            {bruddN>0&&<div className="gph brudd" style={{flex:bruddN}}>⚠ Stengt spor · 3. jul – 13. aug 2028</div>}
+          </div>
+          {/* Time header */}
+          <div className="grow-row">
+            <div className="gcell-label gth lbl">Strekning</div>
+            {visCols.map(c=>(
+              <div key={c.id} className={`gcell gth ${c.brudd?'brudd':'prep'}`}>{c.label||'Mar'}</div>
+            ))}
+          </div>
+          {/* Data rows */}
+          {RENDER_ORDER.map((si,rowIdx)=>{
+            const sec=SECTIONS[si];
+            const oddEven=rowIdx%2===0?'row-even':'row-odd';
+            return(
+              <div key={si} className={`gdr ${oddEven}`}>
+                <div className="gcell-label glabel">
+                  <div className="gsname">{sec.name}</div>
+                  <div className="gskm">{sec.km}</div>
+                </div>
+                {visCols.map((col,colIdx)=>{
+                  const k=`${si}_${col.id}`;
+                  const bars=dataMap[k]||[];
+                  const flushR=bars.some(([wt,lbl])=>spanPos(si,col.id,wt,lbl)==='start');
+                  const flushL=bars.some(([wt,lbl])=>{const p=spanPos(si,col.id,wt,lbl);return p==='mid'||p==='end';});
+                  const bridgeR=bars.some(([wt,lbl])=>spanPos(si,col.id,wt,lbl)==='start'||spanPos(si,col.id,wt,lbl)==='mid');
+                  const bridgeL=bars.some(([wt,lbl])=>{const p=spanPos(si,col.id,wt,lbl);return p==='mid'||p==='end';});
+                  return(
+                    <div key={col.id}
+                      className={`gcell${col.brudd?' bcol':''}${col.mar?' mcol':''}${flushR?' flush-r':''}${flushL?' flush-l':''}${bridgeR?' bridge-r':''}${bridgeL?' bridge-l':''}`}
+                      onMouseLeave={onLeave}>
+                      {bars.map(([wt,label])=>{
+                        const isDimmed=filters.workType!=='all'&&wt!==filters.workType;
+                        return(
+                          <div key={`${wt}_${label}`}
+                            onClick={()=>!isDimmed&&onBarClick({si,colId:col.id,wt,label})}
+                            onMouseEnter={e=>!isDimmed&&onHover(e,si,col.id,wt,label)}>
+                            <GBar si={si} colId={col.id} wt={wt} label={label}
+                              dimmed={isDimmed} rowIdx={rowIdx} colIdx={colIdx}/>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      {/* Legend */}
+      <div className="wt-leg">
+        {Object.entries(WT).map(([k,v])=>(
+          <div key={k} className="wt-li">
+            <div className="wt-sw" style={{background:v.color,border:v.lightBg?'1px solid rgba(255,255,255,0.15)':'none'}}/>
+            {v.label}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+});
+
+/* ── Donut Chart ── */
+function DonutChart({filteredData,setFilters}){
+  const[hov,setHov]=useState(null);
+  const total=filteredData.length;
+  const counts=useMemo(()=>countByWT(filteredData),[filteredData]);
+
+  const r=65,cx=85,cy=85;
+  const circ=2*Math.PI*r;
+
+  const segs=useMemo(()=>{
+    let off=0;
+    return Object.entries(WT)
+      .filter(([k])=>counts[k]>0)
+      .map(([k,v])=>{
+        const len=total>0?(counts[k]/total)*circ:0;
+        const s={key:k,...v,len,off,count:counts[k]};
+        off+=len;return s;
+      });
+  },[counts,total,circ]);
+
+  return(
+    <div className="panel" style={{animationDelay:'.42s'}}>
+      <div className="ph">
+        <div className="pt">
+          <div className="pt-dot" style={{background:'#31B18F',boxShadow:'0 0 8px #31B18F'}}/>
+          Fordeling per arbeidstype
+        </div>
+        <span className="pbadge">{total} aktiviteter</span>
+      </div>
+      <div className="donut-wrap">
+        <div className="donut-svg-wrap" style={{width:170,height:170}}>
+          <svg viewBox="0 0 170 170" width={170} height={170}>
+            <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={20}/>
+            {total===0?(
+              <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={20}/>
+            ):segs.map(seg=>(
+              <circle key={seg.key} cx={cx} cy={cy} r={r} fill="none"
+                stroke={seg.color}
+                strokeWidth={hov===seg.key?25:20}
+                strokeDasharray={`${Math.max(seg.len-1.5,0)} ${circ-Math.max(seg.len-1.5,0)}`}
+                strokeDashoffset={circ/4-seg.off}
+                className="seg"
+                style={{opacity:hov&&hov!==seg.key?0.38:1}}
+                onClick={()=>setFilters(f=>({...f,workType:f.workType===seg.key?'all':seg.key}))}
+                onMouseEnter={()=>setHov(seg.key)}
+                onMouseLeave={()=>setHov(null)}
+              />
+            ))}
+          </svg>
+          <div className="donut-ctr">
+            <div className="donut-cval">{total}</div>
+            <div className="donut-clbl">akt.</div>
+          </div>
+        </div>
+        <div className="donut-leg">
+          {Object.entries(WT).map(([k,v])=>(
+            <div key={k} className="dl-item"
+              style={{opacity:counts[k]===0?0.3:1}}
+              onClick={()=>setFilters(f=>({...f,workType:f.workType===k?'all':k}))}
+              onMouseEnter={()=>setHov(k)} onMouseLeave={()=>setHov(null)}>
+              <div className="dl-swatch" style={{background:v.color}}/>
+              <span className="dl-lbl">{v.label}</span>
+              <span className="dl-cnt">{counts[k]}</span>
+              <span className="dl-pct">{total>0?Math.round(counts[k]/total*100):0}%</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Section Workload ── */
+function SectionBars({filteredData,setFilters}){
+  const counts=useMemo(()=>countBySection(filteredData),[filteredData]);
+  const maxC=useMemo(()=>Math.max(...Object.values(counts),1),[counts]);
+  const[ready,setReady]=useState(false);
+  useEffect(()=>{const t=setTimeout(()=>setReady(true),350);return()=>clearTimeout(t);},[]);
+
+  return(
+    <div className="panel" style={{animationDelay:'.48s'}}>
+      <div className="ph">
+        <div className="pt">
+          <div className="pt-dot" style={{background:'#3B6E9F',boxShadow:'0 0 8px #3B6E9F'}}/>
+          Aktiviteter per strekning
+        </div>
+      </div>
+      <div className="sbars">
+        {RENDER_ORDER.map(si=>{
+          const n=counts[si]||0;
+          const pct=maxC>0?(n/maxC)*100:0;
+          return(
+            <div key={si} className="sbar-row"
+              onClick={()=>setFilters(f=>({...f,section:f.section===String(si)?'all':String(si)}))}>
+              <div className="sbar-lbl" title={SECTIONS[si].name}>{SECTIONS[si].name}</div>
+              <div className="sbar-track">
+                <div className="sbar-fill" style={{width:ready?`${pct}%`:'0%'}}>
+                  {pct>18&&<span className="sbar-n">{n}</span>}
+                </div>
+              </div>
+              {pct<=18&&<span style={{fontSize:11,color:'var(--text-muted)',minWidth:18,textAlign:'right'}}>{n}</span>}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ── Heatmap ── */
+function Heatmap({filteredData}){
+  const hm=useMemo(()=>heatmapData(filteredData),[filteredData]);
+  const maxV=useMemo(()=>{
+    let m=0;
+    Object.values(hm).forEach(row=>Object.values(row).forEach(v=>{if(v>m)m=v;}));
+    return m||1;
+  },[hm]);
+
+  function cellBg(v){
+    if(!v)return null;
+    const t=v/maxV;
+    const r=Math.round(59+t*(240-59));
+    const g=Math.round(110+t*(78-110));
+    const b=Math.round(159+t*(35-159));
+    return `rgba(${r},${g},${b},${0.28+t*0.72})`;
+  }
+
+  return(
+    <div className="panel" style={{animationDelay:'.54s'}}>
+      <div className="ph">
+        <div className="pt">
+          <div className="pt-dot" style={{background:'#B85042',boxShadow:'0 0 8px #B85042'}}/>
+          Aktivitetstetthet — arbeidstype × tidsperiode
+        </div>
+        <span className="pbadge">Mørk = høy intensitet</span>
+      </div>
+      <div className="hm-scroll">
+        <div className="hm-grid" style={{gridTemplateColumns:`160px repeat(${COLS.length},1fr)`}}>
+          <div/>
+          {COLS.map(c=><div key={c.id} className={`hm-col-hdr${c.brudd?' b':''}`}>{c.label||'Mar'}</div>)}
+          {Object.entries(WT).map(([wk,wv],ri)=>(
+            <React.Fragment key={wk}>
+              <div className="hm-row-lbl" style={{color:wv.color}}>
+                <div style={{width:9,height:9,borderRadius:2,background:wv.color,flexShrink:0}}/>
+                {wv.label}
+              </div>
+              {COLS.map((col,ci)=>{
+                const v=hm[wk][col.id];
+                const bg=cellBg(v);
+                const delay=(ri*COLS.length+ci)*10;
+                return v>0?(
+                  <div key={col.id} className="hm-cell"
+                    style={{background:bg,color:'#fff',animationDelay:`${delay}ms`}}
+                    title={`${wv.label} · ${col.label||'Mar'}: ${v}`}>
+                    {v}
+                  </div>
+                ):(
+                  <div key={col.id} className="hm-empty" style={{animationDelay:`${delay}ms`}}/>
+                );
+              })}
+            </React.Fragment>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Tooltip ── */
+function Tooltip({tt}){
+  if(!tt)return null;
+  const w=WT[tt.wt],col=COLS.find(c=>c.id===tt.colId),sec=SECTIONS[tt.si];
+  return(
+    <div className="tt" style={{left:tt.x,top:tt.y}}>
+      <div className="tt-title">{tt.label}</div>
+      <div className="tt-row">
+        <div className="tt-dot" style={{background:w.color}}/>
+        <span className="tt-txt">{w.label}</span>
+      </div>
+      <div className="tt-row">
+        <span className="tt-txt">📍 {sec.name} · {sec.km}</span>
+      </div>
+      <div className="tt-row">
+        <span className="tt-txt">📅 {col.label||'Mars 2028'}{col.brudd?' · ⚠ Stengt spor':''}</span>
+      </div>
+    </div>
+  );
+}
+
+/* ── Activity Detail Panel ── */
+function DetailPanel({act,onClose}){
+  if(!act)return null;
+  const w=WT[act.wt],col=COLS.find(c=>c.id===act.colId),sec=SECTIONS[act.si];
+  const tc=w.lightBg?'#0A1828':'#fff';
+  return(
+    <>
+      <div className="det-overlay" onClick={onClose}/>
+      <div className="det-panel">
+        <button className="det-close" onClick={onClose}>×</button>
+        <div className="det-badge" style={{background:w.color,color:tc}}>{w.label}</div>
+        <div className="det-lbl">{act.label}</div>
+        <div className="det-meta">
+          <div className="det-row">
+            <div className="det-k">Strekning</div>
+            <div className="det-v">{sec.name}</div>
+            <div className="det-vsub">{sec.km}</div>
+          </div>
+          <div className="det-row">
+            <div className="det-k">Tidsperiode</div>
+            <div className="det-v">{col.label||'Mars 2028'}</div>
+            <div className="det-vsub">{col.brudd?'⚠ Stengt spor · jul–aug 2028':'Forberedende fase'}</div>
+          </div>
+          <div className="det-row">
+            <div className="det-k">Arbeidstype</div>
+            <div className="det-v">{w.label}</div>
+          </div>
+          <div className="det-row">
+            <div className="det-k">Tilknyttede aktiviteter i samme strekning</div>
+            <div className="det-v" style={{marginTop:6}}>
+              {DATA.filter(d=>d[0]===act.si&&d[2]===act.wt).map(([,colId,,lbl],i)=>(
+                <div key={i} style={{fontSize:12,color:'var(--text-muted)',padding:'2px 0',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
+                  {COLS.find(c=>c.id===colId)?.label||'Mar'} — {lbl}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* ── Footer ── */
+function Footer(){
+  return(
+    <footer className="footer">
+      <div className="footer-t">COWI — Together, we shape a sustainable and liveable world</div>
+    </footer>
+  );
+}
+
+/* ── APP ── */
+function App(){
+  const[filters,setFilters]=useState({section:'all',workType:'all',period:'all'});
+  const[selAct,setSelAct]=useState(null);
+  const[tooltip,setTooltip]=useState(null);
+
+  const filtered=useMemo(()=>filterData(DATA,filters),[filters]);
+
+  return(
+    <div className="app">
+      <Header/>
+      <div className="main">
+        <div className="pg-title">
+          <h1>Røabanen <span>Driftsoversikt</span></h1>
+          <div className="sub">Rådgiveroppdrag prosjektering — Oppgradering av Røabanen · 2028</div>
+        </div>
+        <FilterPanel filters={filters} setFilters={setFilters}/>
+        <KpiRow filteredData={filtered}/>
+        <GanttPanel filters={filters} onBarClick={setSelAct} setTooltip={setTooltip}/>
+        <div className="chart-row">
+          <DonutChart filteredData={filtered} setFilters={setFilters}/>
+          <SectionBars filteredData={filtered} setFilters={setFilters}/>
+        </div>
+        <Heatmap filteredData={filtered}/>
+      </div>
+      <Footer/>
+      {selAct&&<DetailPanel act={selAct} onClose={()=>setSelAct(null)}/>}
+      <Tooltip tt={tooltip}/>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
