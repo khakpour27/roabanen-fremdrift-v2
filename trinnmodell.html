@@ -42,17 +42,6 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .pgt h1 span{color:var(--accent);}
 .pgt .sub{font-size:18px;color:var(--text-m);margin-top:8px;}
 
-/* Model toggle tabs */
-.model-tabs{display:flex;gap:0;margin-bottom:0;animation:fadeUp .5s .05s ease both;}
-.mtab{
-  padding:14px 28px;font-size:17px;font-weight:600;cursor:pointer;
-  border:1px solid var(--border-s);color:var(--text-m);
-  background:var(--bg-card);transition:all .2s;
-}
-.mtab:first-child{border-radius:var(--r-sm) 0 0 var(--r-sm);}
-.mtab:last-child{border-radius:0 var(--r-sm) var(--r-sm) 0;border-left:0;}
-.mtab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
-.mtab:not(.active):hover{background:var(--bg-alt);}
 
 /* Chevrons */
 .chevrons{display:flex;gap:3px;margin-bottom:20px;overflow-x:auto;animation:fadeUp .5s .1s ease both;}
@@ -724,13 +713,11 @@ function MmiTrack({trinnMap,panelRef}){
 
 /* ── APP ── */
 function App(){
-  const[model,setModel]=useState('prosjekt');
-  const[view,setView]=useState('grouped');
   const[filterTrinn,setFilterTrinn]=useState('all');
-  const[filters,setFilters]=useState({section:'all',workType:'all',period:'all'});
   const panelRef=useRef(null);
-
-  const trinnMap=model==='bygg'?TRINN_BYGG:TRINN_PROSJEKT;
+  const model='prosjekt';
+  const view='grouped';
+  const trinnMap=TRINN_PROSJEKT;
 
   const filteredData=useMemo(()=>{
     return DATA.filter(([si,colId,wt])=>{
@@ -743,79 +730,34 @@ function App(){
     });
   },[filters]);
 
-  // Reset trinn filter when switching model; force grouped view for prosjektfaser
-  useEffect(()=>{setFilterTrinn('all');if(model==='prosjekt')setView('grouped');},[model]);
-
   return(
     <div className="app">
       <Header/>
       <div className="main">
-        <div className="pgt" style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'12px'}}>
-          <div>
-            <h1>{'R\u00f8abanen'} <span>Trinnmodell</span></h1>
-            <div className="sub">{'Byggefasens trinn \u2014 Oppgradering av R\u00f8abanen \u00b7 2028'}</div>
-          </div>
-          <div className="model-tabs" style={{marginBottom:0}}>
-            <div className={`mtab${model==='bygg'?' active':''}`} onClick={()=>setModel('bygg')}>
-              Byggetrinn (5 faser)
-            </div>
-            <div className={`mtab${model==='prosjekt'?' active':''}`} onClick={()=>setModel('prosjekt')}>
-              Prosjektfaser (6 faser)
-            </div>
-          </div>
+        <div className="pgt">
+          <h1>{'R\u00f8abanen'} <span>Trinnmodell</span></h1>
+          <div className="sub">{'Byggefasens trinn \u2014 Oppgradering av R\u00f8abanen \u00b7 2028'}</div>
         </div>
 
         {/* Chevrons */}
-        <Chevrons trinnMap={trinnMap} model={model} data={filteredData}
+        <Chevrons trinnMap={trinnMap} model={model} data={[]}
           filterTrinn={filterTrinn} setFilterTrinn={setFilterTrinn}/>
-
-        {/* Filters — only for byggetrinn */}
-        {model==='bygg'&&<Filters filters={filters} setFilters={setFilters}/>}
-
-        {/* View toggle — only for byggetrinn */}
-        {model==='bygg'&&(<div className="vtabs">
-          <div className={`vtab${view==='grouped'?' active':''}`} onClick={()=>setView('grouped')}>
-            Gruppert visning
-          </div>
-          <div className={`vtab${view==='gantt'?' active':''}`} onClick={()=>setView('gantt')}>
-            Gantt-visning
-          </div>
-        </div>)}
 
         {/* Main content with MMI track */}
         <div className="content-with-mmi">
-          {view==='grouped'&&model==='prosjekt'&&<MmiTrack trinnMap={trinnMap} panelRef={panelRef}/>}
+          <MmiTrack trinnMap={trinnMap} panelRef={panelRef}/>
           <div className="content-main">
             <div className="panel" ref={panelRef} style={{animationDelay:'.2s'}}>
               <div className="ph">
                 <div className="pt">
                   <div className="pt-dot" style={{background:trinnMap[Object.keys(trinnMap)[0]]?.color}}/>
-                  {model==='bygg'?<>Byggetrinn &mdash; {view==='grouped'?'Aktiviteter per trinn':'Gantt-oversikt'}</>:'Prosjektfaser'}
+                  Prosjektfaser
                 </div>
-                {model==='bygg'&&<span className="pbg">{filteredData.length} aktiviteter</span>}
               </div>
-
-              {view==='grouped'?(
-                <GroupedView trinnMap={trinnMap} model={model} filteredData={filteredData} filterTrinn={filterTrinn}/>
-              ):(
-                <GanttView trinnMap={trinnMap} model={model} filteredData={filteredData} filterTrinn={filterTrinn} allData={filteredData}/>
-              )}
+              <GroupedView trinnMap={trinnMap} model={model} filteredData={[]} filterTrinn={filterTrinn}/>
             </div>
           </div>
         </div>
-
-        {/* Distribution bar — only for byggetrinn */}
-        {model==='bygg'&&(
-          <div className="panel" style={{animationDelay:'.3s'}}>
-            <div className="ph">
-              <div className="pt">
-                <div className="pt-dot" style={{background:'#F04E23',boxShadow:'0 0 8px #F04E23'}}/>
-                Fordeling per trinn
-              </div>
-            </div>
-            <Timeline trinnMap={trinnMap} model={model} filteredData={filteredData}/>
-          </div>
-        )}
       </div>
       <Footer/>
     </div>
