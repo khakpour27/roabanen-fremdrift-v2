@@ -719,17 +719,6 @@ function App(){
   const view='grouped';
   const trinnMap=TRINN_PROSJEKT;
 
-  const filteredData=useMemo(()=>{
-    return DATA.filter(([si,colId,wt])=>{
-      if(filters.section!=='all'&&si!==parseInt(filters.section))return false;
-      if(filters.workType!=='all'&&wt!==filters.workType)return false;
-      const col=COLS.find(c=>c.id===colId);
-      if(filters.period==='prep'&&col.brudd)return false;
-      if(filters.period==='brudd'&&!col.brudd)return false;
-      return true;
-    });
-  },[filters]);
-
   return(
     <div className="app">
       <Header/>
