@@ -301,9 +301,9 @@ const TRINN_PROSJEKT={
     desc:'Umiddelbart etter kontraktsignering inviterer vi til samhandlingsm\u00f8te for \u00e5 etablere l\u00f8sningsorientert og trygg samhandling, spilleregler og felles m\u00e5l. Interessentanalyse i samarbeid med Sporveien. Gjennomgang av fremdriftsplan for \u00e5 sikre omforente milepæler.'},
   1:{label:'Forprosjekt',short:'T1 Forprosjekt',color:'#3B6E9F',period:'',mmi:'MMI 200',
     desc:'Vurdering av sprekk i st\u00f8ttemur p\u00e5 Smestad stasjon. Kartlegge og gjennomg\u00e5 grunnlag fra Sporveien, befaringer, supplerende innm\u00e5linger, ledningsdata, grunnunders\u00f8kelser og milj\u00f8kartlegging. Kartlegge premisser for fase- og anleggsgjennomf\u00f8ringsplan. Utvikling og optimalisering av tiltak, evaluere alternativer. Avsluttes med forprosjektrapport og kostnadsestimat.'},
-  2:{label:'Detaljprosjektering',short:'T2 Detaljprosj.',color:'#F04E23',period:'',mmi:'MMI 400',
+  2:{label:'Detaljprosjektering',short:'T2 Detaljprosj.',color:'#F04E23',period:'',mmi:'MMI 375',
     desc:'Detaljering av valgt alternativ for alle fag. MMI-veileder 2.0 for MMI-niv\u00e5definisjoner, fastsatt i BIM-implementeringsplan (BIP). Komplett konkurransegrunnlag: modeller, tegninger, fagrapporter, tekniske beskrivelser, kravspesifikasjoner, risikoanalyser, kostnadskalkyler og leveranseplaner. Oppdatert kostnadsestimat og usikkerhetsanalyse.'},
-  3:{label:'Kontrahering og samhandling',short:'T3 Kontrahering',color:'#612141',period:'',mmi:'\u2014',
+  3:{label:'Kontrahering og samhandling',short:'T3 Kontrahering',color:'#612141',period:'',mmi:'MMI 400',
     desc:'Bist\u00e5 Sporveien med sp\u00f8rsm\u00e5l fra tilbydere og kontrahering av entrepren\u00f8r. Sikre at planlagte l\u00f8sninger er praktisk gjennomf\u00f8rbare og tilpasset fremdriftsplan for byggefasen. Utarbeidelse av arbeidsunderlag til entrepren\u00f8r med tegninger og modeller klart for bygging.'},
   4:{label:'Oppf\u00f8lging i byggefasen',short:'T4 Byggefase',color:'#B85042',period:'',mmi:'\u2014',
     desc:'Strukturert samspillsfase basert p\u00e5 VDC-metodikk. Leveranse av arbeidstegninger og oppdatert modellgrunnlag iht. entrepren\u00f8rens fremdriftsplan. L\u00f8pende tekniske avklaringer, bygge- og spesialm\u00f8ter, befaringer. Oppf\u00f8lging mot Sporveiens tekniske regelverk.'},
@@ -628,7 +628,8 @@ const MMI_LEVELS={
   '200':{name:'Ferdig konsept',desc:'Konseptuelle l\u00f8sninger besluttet og modellert'},
   '300':{name:'Klar for tverrfaglig kontroll',desc:'Alle objekter relevante for tverrfaglig kontroll er modellert'},
   '350':{name:'Utf\u00f8rt tverrfaglig koordinering',desc:'Alle objekter modellert, korrigert iht. tverrfaglig kontroll'},
-  '400':{name:'Produksjonsunderlag',desc:'Klart for utf\u00f8relse p\u00e5 byggeplass'},
+  '375':{name:'Detalj for anbud',desc:'Detaljert for konkurransegrunnlag og anbud'},
+  '400':{name:'Arbeidsgrunnlag',desc:'Klart for utf\u00f8relse p\u00e5 byggeplass'},
   '500':{name:'Som bygget',desc:'FDV-informasjon lagt inn, leveranse overdratt til bestiller'},
 };
 
@@ -646,15 +647,10 @@ function MmiTrack({trinnMap,panelRef}){
       const badgeH=92;
       panelRef.current.querySelectorAll('.trinn-section[data-trinn]').forEach(el=>{
         const k=el.dataset.trinn;
-        const header=el.querySelector('.ts-header');
-        if(header){
-          const hRect=header.getBoundingClientRect();
-          const headerCenter=hRect.top+hRect.height/2;
-          pos[k]=headerCenter - trackRect.top - badgeH/2;
-        }else{
-          const elRect=el.getBoundingClientRect();
-          pos[k]=elRect.top - trackRect.top + 6;
-        }
+        const elRect=el.getBoundingClientRect();
+        // Position badge near the bottom of the section (MMI is achieved at the end of the step)
+        const sectionBottom=elRect.bottom - trackRect.top;
+        pos[k]=sectionBottom - badgeH - 10;
       });
       setPositions(pos);
     }
@@ -701,7 +697,7 @@ function MmiTrack({trinnMap,panelRef}){
                     {v.mmi}
                   </div>
                 </div>
-                {mmiInfo&&<div className="mmi-name-label">{mmiCode==='400'?<>Produksjons-<br/>underlag</>:mmiInfo.name}</div>}
+                {mmiInfo&&<div className="mmi-name-label">{mmiInfo.name}</div>}
               </div>
             ):isT0?(
               <div style={{position:'relative'}}>
