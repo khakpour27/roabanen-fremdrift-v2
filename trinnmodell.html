@@ -107,6 +107,8 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .ts-count{font-size:16px;font-weight:700;background:rgba(255,255,255,0.35);padding:3px 10px;border-radius:10px;}
 .ts-chevron{font-size:18px;transition:transform .2s;}
 .ts-chevron.open{transform:rotate(90deg);}
+.ts-mmi-inline{display:none;font-size:13px;font-weight:700;background:rgba(255,255,255,0.25);padding:3px 10px;border-radius:4px;}
+@media(max-width:900px){.ts-mmi-inline{display:inline-block;}}
 
 .ts-body{
   background:var(--bg-card);border:1px solid var(--border);
@@ -228,7 +230,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .footer-t{font-size:13px;color:rgba(255,255,255,0.6);letter-spacing:.3px;}
 
 @media(max-width:1100px){.chevrons{flex-wrap:wrap;}}
-@media(max-width:900px){.content-with-mmi{flex-direction:column;}.mmi-track{width:100%;flex-direction:row;flex-wrap:wrap;justify-content:center;gap:12px;padding:8px 0;}.mmi-track::before{display:none;}.mmi-name-label{display:none;}.mmi-line{display:none !important;}}
+@media(max-width:900px){.mmi-track{display:none;}}
 @media(max-width:768px){.main{padding:14px;}.ctag{display:none;}.chev{min-width:100px;padding:10px 12px 8px 14px;}}
 </style>
 </head>
@@ -457,6 +459,7 @@ function GroupedView({trinnMap,model,filteredData,filterTrinn}){
             <div className="ts-header" style={{background:v.color,color:'#fff'}} onClick={()=>model==='bygg'?toggle(k):null}>
               <span className="ts-num">TRINN {k}</span>
               <span className="ts-name">{v.label}</span>
+              {model!=='bygg'&&v.mmi&&v.mmi!=='\u2014'&&<span className="ts-mmi-inline">{v.mmi}</span>}
               {model==='bygg'&&<span className="ts-count">{acts.length}</span>}
               {model==='bygg'&&<span className={`ts-chevron${isOpen?' open':''}`}>&#9654;</span>}
             </div>
