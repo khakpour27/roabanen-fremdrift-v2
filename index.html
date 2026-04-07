@@ -279,10 +279,6 @@
     background: #2E86AB;
     color: #fff;
   }
-  .trinn-model-group { display: none; }
-  body.trinn-active .trinn-model-group { display: flex; }
-  .trinn-filter-group { display: none; }
-  body.trinn-active .trinn-filter-group { display: flex; }
 
   /* Trinn left border on bars */
   body.trinn-active .bar[data-trinn] {
@@ -360,17 +356,6 @@
   <button class="filter-reset" onclick="resetFilters()">Nullstill</button>
   <span style="width:1px;height:24px;background:#C0C8D4;flex-shrink:0"></span>
   <button class="trinn-toggle" onclick="toggleTrinn()">Vis trinnmodell</button>
-  <div class="filter-group trinn-model-group">
-    <label for="f-trinn-model">Modell:</label>
-    <select id="f-trinn-model">
-      <option value="bygg">Byggetrinn (5 faser)</option>
-      <option value="prosjekt">Prosjektfaser (6 faser)</option>
-    </select>
-  </div>
-  <div class="filter-group trinn-filter-group">
-    <label for="f-trinn">Trinn:</label>
-    <select id="f-trinn"><option value="all">Alle trinn</option></select>
-  </div>
 </div>
 
 <div class="table-wrap">
@@ -536,12 +521,6 @@ function initFilters() {
   document.getElementById('f-section').addEventListener('change', applyFilters);
   document.getElementById('f-worktype').addEventListener('change', applyFilters);
   document.getElementById('f-period').addEventListener('change', applyFilters);
-  document.getElementById('f-trinn').addEventListener('change', applyFilters);
-  document.getElementById('f-trinn-model').addEventListener('change', function() {
-    populateTrinnFilter();
-    render();  // re-render to update bar data-trinn attributes and border colors
-    applyFilters();
-  });
 
   // Apply URL parameters
   const params = new URLSearchParams(window.location.search);
@@ -561,13 +540,7 @@ function initFilters() {
   if (params.has('trinn') || params.has('model')) {
     document.body.classList.add('trinn-active');
     document.querySelector('.trinn-toggle').textContent = 'Skjul trinnmodell';
-    if (params.has('model')) {
-      document.getElementById('f-trinn-model').value = params.get('model');
-    }
     populateTrinnFilter();
-    if (params.has('trinn')) {
-      document.getElementById('f-trinn').value = params.get('trinn');
-    }
   }
   applyFilters();
 }
@@ -576,7 +549,6 @@ function resetFilters() {
   document.getElementById('f-section').value = 'all';
   document.getElementById('f-worktype').value = 'all';
   document.getElementById('f-period').value = 'all';
-  document.getElementById('f-trinn').value = 'all';
   applyFilters();
 }
 
@@ -597,7 +569,7 @@ function applyFilters() {
   });
 
   // Dim/show bars based on work type AND trinn
-  const trinnVal = document.getElementById('f-trinn').value;
+  const trinnVal = 'all';
   const trinnActive = document.body.classList.contains('trinn-active');
   const trinnField = getActiveTrinnModel() === 'bygg' ? 'trinnBygg' : 'trinnProsjekt';
   const bars = document.querySelectorAll('.bar');
@@ -638,8 +610,7 @@ function applyFilters() {
 
 // ── Trinnmodell functions ──
 function getActiveTrinnModel() {
-  const sel = document.getElementById('f-trinn-model');
-  return sel ? sel.value : 'bygg';
+  return 'bygg';
 }
 
 function getActiveTrinnMap() {
@@ -655,17 +626,7 @@ function toggleTrinn() {
   applyFilters();
 }
 
-function populateTrinnFilter() {
-  const sel = document.getElementById('f-trinn');
-  const model = getActiveTrinnMap();
-  sel.innerHTML = '<option value="all">Alle trinn</option>';
-  for (const [k, v] of Object.entries(model)) {
-    const opt = document.createElement('option');
-    opt.value = k;
-    opt.textContent = v.short;
-    sel.appendChild(opt);
-  }
-}
+function populateTrinnFilter() {}
 
 function renderTrinnLegend() {
   const el = document.getElementById('trinn-legend');
