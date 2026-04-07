@@ -644,28 +644,26 @@ function MmiTrack({trinnMap,panelRef,collapsed,setCollapsed}){
   useEffect(()=>{
     function measure(){
       if(!panelRef?.current||!trackRef.current)return;
-      const panelRect=panelRef.current.getBoundingClientRect();
       const trackRect=trackRef.current.getBoundingClientRect();
       const pos={};
-      const badgeH=92;
       panelRef.current.querySelectorAll('.trinn-section[data-trinn]').forEach(el=>{
         const k=el.dataset.trinn;
-        const elRect=el.getBoundingClientRect();
-        // Position badge near the bottom of the section (MMI is achieved at the end of the step)
-        const sectionBottom=elRect.bottom - trackRect.top;
-        pos[k]=sectionBottom - badgeH - 10;
+        const header=el.querySelector('.ts-header');
+        if(header){
+          const hRect=header.getBoundingClientRect();
+          pos[k]=hRect.top - trackRect.top + hRect.height/2 - 46;
+        }
       });
       setPositions(pos);
     }
     measure();
-    const obs=new MutationObserver(measure);
+    // Re-measure after transitions settle
+    const timers=[50,150,350,500].map(ms=>setTimeout(measure,ms));
+    const obs=new MutationObserver(()=>{measure();setTimeout(measure,350);});
     if(panelRef.current)obs.observe(panelRef.current,{childList:true,subtree:true,attributes:true});
     window.addEventListener('resize',measure);
-    // Re-measure on any click (expand/collapse)
-    const clickH=()=>setTimeout(measure,50);
-    document.addEventListener('click',clickH);
-    return()=>{obs.disconnect();window.removeEventListener('resize',measure);document.removeEventListener('click',clickH);};
-  },[panelRef,trinnMap]);
+    return()=>{obs.disconnect();window.removeEventListener('resize',measure);timers.forEach(clearTimeout);};
+  },[panelRef,trinnMap,collapsed]);
 
   const entries=Object.entries(trinnMap);
   const maxPos=Math.max(0,...Object.values(positions))+92;
