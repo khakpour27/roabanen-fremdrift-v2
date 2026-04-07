@@ -169,6 +169,7 @@
   tbody tr:nth-child(even) td.brudd-col { background: #F5F6F9 !important; }
   tbody tr:nth-child(odd) td.mar-col { background: #E8EFF5 !important; }
   tbody tr:nth-child(even) td.mar-col { background: #EFF5FA !important; }
+  .mar-header { background: #C8D8E8 !important; font-style: italic; }
 
   /* Connected spanning bars */
   .bar.span-start { border-top-right-radius: 0; border-bottom-right-radius: 0; }
@@ -653,7 +654,8 @@ function render() {
   COLS.forEach(c => {
     const cls = c.brudd ? 'time-header brudd-time' : 'time-header';
     const pCls = c.brudd ? 'brudd-phase-header' : 'prep-phase-header';
-    h += `<th class="${cls} ${pCls}" data-period="${c.period}">${c.label}</th>`;
+    const marCls = c.mar ? ' mar-header' : '';
+    h += `<th class="${cls} ${pCls}${marCls}" data-period="${c.period}">${c.label}</th>`;
   });
   h += '</tr></thead>';
 
