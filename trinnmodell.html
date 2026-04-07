@@ -121,8 +121,6 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .ts-detail-hint{font-size:13px;opacity:0.7;margin-left:auto;font-weight:400;letter-spacing:0;}
 .ts-header .ts-expand-icon{font-size:14px;opacity:0.7;transition:transform .2s;}
 .ts-header .ts-expand-icon.open{transform:rotate(180deg);}
-.mmi-detail-drop{max-height:0;overflow:hidden;opacity:0;transition:max-height .4s ease,opacity .3s ease,padding .3s ease;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-sm);font-size:13px;line-height:1.6;color:var(--text);padding:0 12px;margin-top:6px;width:140px;box-shadow:var(--shadow);}
-.mmi-detail-drop.open{max-height:300px;opacity:1;padding:10px 12px;}
 
 .act-card{
   display:flex;align-items:center;gap:10px;padding:8px 10px;
@@ -451,11 +449,8 @@ function Filters({filters,setFilters}){
 }
 
 /* Grouped cards view — renders sections with data-trinn for MMI alignment */
-function GroupedView({trinnMap,model,filteredData,filterTrinn}){
+function GroupedView({trinnMap,model,filteredData,filterTrinn,collapsed,setCollapsed}){
   const trinnField=model==='bygg'?4:5;
-  const[collapsed,setCollapsed]=useState(()=>{
-    const init={};Object.keys(trinnMap).forEach(k=>{init[k]=true;});return init;
-  });
   const toggle=k=>setCollapsed(c=>({...c,[k]:!c[k]}));
 
   return(
@@ -640,10 +635,9 @@ const MMI_LEVELS={
   '500':{name:'Som bygget',desc:'FDV-informasjon lagt inn, leveranse overdratt til bestiller'},
 };
 
-function MmiTrack({trinnMap,panelRef}){
+function MmiTrack({trinnMap,panelRef,collapsed,setCollapsed}){
   const[positions,setPositions]=useState({});
-  const[expanded,setExpanded]=useState({});
-  const toggleExp=k=>setExpanded(e=>({...e,[k]:!e[k]}));
+  const toggleTrinn=k=>setCollapsed(c=>({...c,[k]:!c[k]}));
   const trackRef=useRef(null);
 
   // Measure trinn section positions relative to the panel
@@ -698,7 +692,7 @@ function MmiTrack({trinnMap,panelRef}){
         return(
           <div key={k} style={{position:'absolute',top:top,left:0,right:0,display:'flex',flexDirection:'column',alignItems:'center',transition:'top 0.3s ease'}}>
             {hasMmi?(
-              <div style={{position:'relative',cursor:'pointer'}} onClick={()=>toggleExp(k)}>
+              <div style={{position:'relative',cursor:'pointer'}} onClick={()=>toggleTrinn(k)}>
                 <div className="mmi-badge-wrap">
                   <div className="mmi-badge-border" style={{background:'#1C2B54'}}/>
                   <div className="mmi-badge" style={{background:v.color}}>
@@ -706,13 +700,9 @@ function MmiTrack({trinnMap,panelRef}){
                   </div>
                 </div>
                 {mmiInfo&&<div className="mmi-name-label">{mmiInfo.name}</div>}
-                <div className={`mmi-detail-drop${expanded[k]?' open':''}`}>
-                  <div style={{fontWeight:700,marginBottom:4}}>{v.mmi} {'\u2013'} {mmiInfo?.name}</div>
-                  <div>{mmiInfo?.desc}</div>
-                </div>
               </div>
             ):isT0?(
-              <div style={{position:'relative',cursor:'pointer'}} onClick={()=>toggleExp(k)}>
+              <div style={{position:'relative',cursor:'pointer'}} onClick={()=>toggleTrinn(k)}>
                 <div className="mmi-badge-wrap">
                   <div className="mmi-badge-border" style={{background:'rgba(28,43,84,0.25)'}}/>
                   <div className="mmi-badge" style={{background:'#E8F2FA',color:'#1C2B54',textShadow:'none',fontSize:'11px',fontWeight:700,lineHeight:1.2,flexDirection:'column'}}>
@@ -720,10 +710,6 @@ function MmiTrack({trinnMap,panelRef}){
                   </div>
                 </div>
                 <div className="mmi-name-label" style={{color:'#1C2B54'}}>MMI Status</div>
-                <div className={`mmi-detail-drop${expanded[k]?' open':''}`}>
-                  <div style={{fontWeight:700,marginBottom:4}}>Forventet modenhet</div>
-                  <div>Utgangspunkt for MMI-oppf{'\u00f8'}lging gjennom prosjektets faser. Ingen formell MMI-verdi er tildelt i dette trinnet.</div>
-                </div>
               </div>
             ):(
               <div style={{display:'flex',flexDirection:'column',alignItems:'center',marginTop:8}}>
@@ -745,6 +731,9 @@ function App(){
   const model='prosjekt';
   const view='grouped';
   const trinnMap=TRINN_PROSJEKT;
+  const[collapsed,setCollapsed]=useState(()=>{
+    const init={};Object.keys(trinnMap).forEach(k=>{init[k]=true;});return init;
+  });
 
   return(
     <div className="app">
@@ -761,7 +750,7 @@ function App(){
 
         {/* Main content with MMI track */}
         <div className="content-with-mmi">
-          <MmiTrack trinnMap={trinnMap} panelRef={panelRef}/>
+          <MmiTrack trinnMap={trinnMap} panelRef={panelRef} collapsed={collapsed} setCollapsed={setCollapsed}/>
           <div className="content-main">
             <div className="panel" ref={panelRef} style={{animationDelay:'.2s'}}>
               <div className="ph">
@@ -770,7 +759,7 @@ function App(){
                   Prosjektfaser
                 </div>
               </div>
-              <GroupedView trinnMap={trinnMap} model={model} filteredData={[]} filterTrinn={filterTrinn}/>
+              <GroupedView trinnMap={trinnMap} model={model} filteredData={[]} filterTrinn={filterTrinn} collapsed={collapsed} setCollapsed={setCollapsed}/>
             </div>
           </div>
         </div>
